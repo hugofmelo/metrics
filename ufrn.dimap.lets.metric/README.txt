@@ -1,0 +1,37 @@
+HOW TO USE
+
+
+NOTES
+Como abrir no Java Editor:
+
+Estou usando 2 formas diferentes de abrir o editor Java com o código selecionado. Ao navegar pelos ASTNodes, em alguns deles é possível chamar "resolveBinding", resultando em um IBinding. Com ele, é possível chamar getJavaElement, que vai me dar um IJavaElement, que pode ser aberto no editor diretamente.
+ASTNode --> resolveBinding --> getJavaElement --> openInEditor
+
+Na outra forma eu pego a posição do ASTNode em relação ao seu CompilationUnit. Depois eu mando abrir aquele CU marcando aquele trecho.
+ASTNode --> Compilation Unit --> JavaElement (ICompilationUnit) --> handleIdetifier --> JavaElement --> IFile -->
+		--> offSet + lenght  -------> 		------->		------->		------->		-------> 	 -------> 
+
+
+TO DO
+Organizar o código
+	Criar pacotes e organizar as classes
+	Implementar operações longas em threads
+Criar documento de como usar
+Criar documento explicando a arquitetura
+Hospedar no GitHub
+Verificar na hora de abrir o Java Editor oq é necessário para selecionar o texto
+Modificar o método isSubtypeOfThrowable para stackar as exceções
+Refatorar parte de AllMetrics da ferramenta
+	
+Olha páginas salvas quando quiser melhorar o plugin
+
+
+
+INFORMAÇÕES
+
+A ferramenta só lida com 3 situações de throw:
+(1) "throw e;" - rethrow - 'e' é uma exceção capturada no último catch
+(2) "throw new Exception ()" - nova exceção - nova exceção é criada e sinalizada
+(3) "throw new Exception (e)" - wrapping - nova exceção é criada e encapsula a exceção capturada no último catch
+Quando a sinalização não se encaixa em um desses padrões, é registrado que o throw não é "regular". Uma idéia é perguntar ao usuário que tipo de sinalização é aquela (nova, rethrow ou wrap). Até códigos ligeiramente diferentes não são reconhecidos, como "throw (e)".
+

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="ufrn.dimap.lets.metric.allmetrics"
+            name="All metrics">
+      </command>
+      <command
+            id="ufrn.dimap.lets.metric.exceptionhierarchy"
+            name="Exception Hierarchy">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <command
+               commandId="ufrn.dimap.lets.metric.allmetrics"
+               label="All metrics"
+               style="push">
+         </command>
+         <command
+               commandId="ufrn.dimap.lets.metric.exceptionhierarchy"
+               label="Create exception hierarchy"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="ufrn.dimap.lets.metric.handlers.AllMetrics"
+            commandId="ufrn.dimap.lets.metric.allmetrics">
+      </handler>
+      <handler
+            class="ufrn.dimap.lets.metric.handlers.ExceptionHierarchyHandler"
+            commandId="ufrn.dimap.lets.metric.exceptionhierarchy">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="ufrn.dimap.lets.metric"
+            name="Exception Expert">
+      </category>
+      <view
+            category="ufrn.dimap.lets.metric"
+            class="ufrn.dimap.lets.metric.views.SignalersView"
+            icon="icons/sample.gif"
+            id="ufrn.dimap.lets.metric.views.SignalersView"
+            name="Signalers">
+      </view>
+      <view
+            category="ufrn.dimap.lets.metric"
+            class="ufrn.dimap.lets.metric.views.ExceptionHierarchyView"
+            icon="icons/sample.gif"
+            id="ufrn.dimap.lets.metric.views.ExceptionHierarchyView"
+            name="Exception Hierarchy">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+
+</plugin>
