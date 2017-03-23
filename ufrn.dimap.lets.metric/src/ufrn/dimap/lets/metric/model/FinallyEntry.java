@@ -4,7 +4,7 @@ import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TryStatement;
 
-public class FinallyEntry extends AbstractViewEntry
+public class FinallyEntry extends AbstractEntry
 {
 	public FinallyEntry( Block node )
 	{

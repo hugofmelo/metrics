@@ -4,14 +4,14 @@ import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TryStatement;
 
-public class TryEntry extends AbstractViewEntry
+public class TryEntry extends AbstractEntry
 {
 	public TryEntry( TryStatement node )
 	{
 		super (node);
 		
-		CompilationUnit compilationUnit = (CompilationUnit) node.getRoot();
-		Block tryBlock = node.getBody();
+		//CompilationUnit compilationUnit = (CompilationUnit) node.getRoot();
+		//Block tryBlock = node.getBody();
 		/*
 		this.startPosition = node.getStartPosition();
 		this.length = tryBlock.getStartPosition() - this.startPosition + tryBlock.getLength();

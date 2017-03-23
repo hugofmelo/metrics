@@ -11,7 +11,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import ufrn.dimap.lets.metric.model.AbstractViewEntry;
+import ufrn.dimap.lets.metric.model.AbstractEntry;
+import ufrn.dimap.lets.metric.model.TypeEntry;
 
 public class OpenEntryInEditorAction extends Action
 {
@@ -29,7 +30,7 @@ public class OpenEntryInEditorAction extends Action
 		
 		while ( iteSelection.hasNext() )
 		{
-			AbstractViewEntry entry = (AbstractViewEntry) iteSelection.next();
+			AbstractEntry entry = (AbstractEntry) iteSelection.next();
 			
 			try
 			{
@@ -49,12 +50,12 @@ public class OpenEntryInEditorAction extends Action
 		
 	}
 	
-	private void openAndSelect (AbstractViewEntry entry) throws PartInitException, JavaModelException 
+	private void openAndSelect (AbstractEntry entry) throws PartInitException, JavaModelException 
 	{
 		//IEditorPart editor = JavaUI.openInEditor(entry.getICompilationUnit());
 		IEditorPart editor = JavaUI.openInEditor(entry.getJavaElement());
 		
-		if (entry.hasNode())
+		if (entry.hasNode() && !(entry instanceof TypeEntry) )
 		{
 			ITextEditor textEditor = (ITextEditor) editor;
 			textEditor.selectAndReveal(entry.getStartPosition(), entry.getLength());

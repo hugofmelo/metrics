@@ -18,14 +18,14 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import ufrn.dimap.lets.metric.model.hierarchy.HierarchyModel;
+import ufrn.dimap.lets.metric.model.HierarchyModel;
 import ufrn.dimap.lets.metric.views.ExceptionHierarchyView;
-import ufrn.dimap.lets.metric.visitor.ExceptionHierarchyVisitor;
+import ufrn.dimap.lets.metric.visitor.TypeVisitor;
 import ufrn.dimap.lets.metric.visitor.UnresolvedBindingException;
 
 public class ExceptionHierarchyHandler extends AbstractHandler
 {	
-	private final String reportHierarchy = "C:/Users/hugofm/Desenvolvimento/Resultados/hierarchy.txt";
+	private final String reportHierarchy = "D:/Desenvolvimento/Resultados/hierarchy.txt";
 	private HierarchyModel model;
 	
 	
@@ -40,7 +40,9 @@ public class ExceptionHierarchyHandler extends AbstractHandler
 			compilationUnits = HandlerUtil.getAllCompilationUnits();
 			
 			// Resetando o modelo para receber os dados
-			this.model = new HierarchyModel();
+			HierarchyModel.clearInstance();
+			this.model = HierarchyModel.getInstance();
+			
 			
 			// Processando o código, extraindo dados e armazenando no modelo
 			parse( compilationUnits );
@@ -75,15 +77,14 @@ public class ExceptionHierarchyHandler extends AbstractHandler
 
 	private void parse (List<ICompilationUnit> compilationUnits) 
 	{
-		ExceptionHierarchyVisitor visitor;
+		TypeVisitor visitor;
 
-		visitor = new ExceptionHierarchyVisitor(this.model);
+		visitor = new TypeVisitor();
 		
 		for (ICompilationUnit unit : compilationUnits)
 		{
-			CompilationUnit parse = parse(unit);
-
-			//System.out.println(parse.getJavaElement().getElementName());
+			CompilationUnit parse = HandlerUtil.parse(unit);
+			
 			try
 			{
 				parse.accept(visitor);
@@ -93,50 +94,23 @@ public class ExceptionHierarchyHandler extends AbstractHandler
 				System.err.println(ube.getMessage());
 			}
 		}
-			
 	}
-
 
 	private void createReport() throws IOException
 	{
 		FileWriter outputFile = null;
 		//ExceptionComparator comparator = new ExceptionComparator();
 		
-		try {
-			outputFile = new FileWriter(new File(this.reportHierarchy));
+		
+		outputFile = new FileWriter(new File(this.reportHierarchy));
+		
+		try
+		{
 			outputFile.write(this.model.toString());
 		} 
 		finally
 		{
 			outputFile.close();
 		}
-	}
-	
-	/**
-	 * Reads a ICompilationUnit and creates the AST DOM for manipulating the
-	 * Java source file
-	 *
-	 * @param unit
-	 * @return
-	 */
-
-	private static CompilationUnit parse(ICompilationUnit unit) {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
-		parser.setResolveBindings(true);
-		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setSource(unit);
-
-		return (CompilationUnit) parser.createAST(null); // parse
-	}
-	
-	private class ExceptionComparator implements Comparator <ITypeBinding>
-	{
-
-		@Override
-		public int compare (ITypeBinding first, ITypeBinding second)
-		{
-			return first.getQualifiedName().compareTo(second.getQualifiedName());
-		}
-		
 	}
 }

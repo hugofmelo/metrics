@@ -10,6 +10,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionService;
@@ -78,5 +81,21 @@ public class HandlerUtil
 		}
 		
 		return compilationUnits;
+	}
+	
+	/**
+	 * Reads a ICompilationUnit and creates the AST DOM for manipulating the
+	 * Java source file
+	 *
+	 * @param unit
+	 * @return
+	 */
+	public static CompilationUnit parse(ICompilationUnit unit) {
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setResolveBindings(true);
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		parser.setSource(unit);
+
+		return (CompilationUnit) parser.createAST(null);
 	}
 }

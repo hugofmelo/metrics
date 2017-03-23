@@ -12,34 +12,27 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
 
-import ufrn.dimap.lets.metric.model.CatchEntry;
-import ufrn.dimap.lets.metric.model.FinallyEntry;
-import ufrn.dimap.lets.metric.model.MetricsModel;
+import ufrn.dimap.lets.metric.model.HierarchyModel;
 import ufrn.dimap.lets.metric.model.SignalerEntry;
-import ufrn.dimap.lets.metric.model.TryEntry;
 
 public class MetricsVisitor extends ASTVisitor
 {
 	private Stack <String> catchedVariables;
 	
 	//private CompilationUnit compilationUnit;
-	public MetricsModel model;
+	public HierarchyModel model;
 	
-	public MetricsVisitor (MetricsModel model)
+	public MetricsVisitor ()
 	{
-		this.model = model;
+		this.model = HierarchyModel.getInstance();
 		
 		this.catchedVariables = new Stack <String> ();
 	}
 	
 	public boolean visit (ThrowStatement throwNode)
-	{
-		// Cria uma nova entrada de signaler
-		SignalerEntry signalerEntry = new SignalerEntry(throwNode);
-		
+	{	
 		// Adiciona entrada no modelo
-		this.model.addSignalerEntry(signalerEntry);
-		
+		SignalerEntry signalerEntry = this.model.addSignaler(throwNode);
 
 		// VERIFICAR QUAL DOS 3 TIPOS DE SIGNALER ESTE SE ENCAIXA
 
@@ -49,7 +42,7 @@ public class MetricsVisitor extends ASTVisitor
 		if ( throwExpression instanceof SimpleName )
 		{
 			// e a pilha de variáveis capturadas não pode ser vazia.
-			if ( this.catchedVariables.isEmpty() == false )
+			if ( !this.catchedVariables.isEmpty() )
 			{
 				boolean endStackLoop = false;
 				String catchedVariable;
@@ -82,11 +75,11 @@ public class MetricsVisitor extends ASTVisitor
 			List<Expression> arguments = ((ClassInstanceCreation)throwExpression).arguments();
 			
 			boolean wrappingConfirmed = false; 	// Variavel para controle do loop 
-			Expression argument;
+			
 			// Para cada argumento da instaciação
 			for ( Iterator<Expression> argumentIte = arguments.iterator() ; wrappingConfirmed == false && argumentIte.hasNext() ; )
 			{
-				argument = argumentIte.next();
+				Expression argument = argumentIte.next();
 				if ( argument instanceof SimpleName )
 				{
 					if ( this.catchedVariables.isEmpty() == false )
@@ -96,7 +89,7 @@ public class MetricsVisitor extends ASTVisitor
 						for ( Iterator<String> stackIte = this.catchedVariables.iterator() ; wrappingConfirmed == false && stackIte.hasNext() ;  )
 						{
 							catchedVariable = stackIte.next();
-							if ( ((SimpleName)throwExpression).getIdentifier().equals(catchedVariable) )
+							if ( ((SimpleName)argument).getIdentifier().equals(catchedVariable) )
 							{
 								wrappingConfirmed = true;
 								
@@ -132,14 +125,11 @@ public class MetricsVisitor extends ASTVisitor
 	
 	public boolean visit (TryStatement tryNode)
 	{
-		
-		TryEntry tryEntry = new TryEntry (tryNode);
-		this.model.addTryEntry(tryEntry);
+		this.model.addTry(tryNode);
 		
 		if (tryNode.getFinally() != null)
 		{
-			FinallyEntry finallyEntry = new FinallyEntry (tryNode.getFinally());
-			this.model.addFinallyEntry(finallyEntry);
+			this.model.addFinally(tryNode.getFinally());
 		}
 		
 		return true;
@@ -152,9 +142,7 @@ public class MetricsVisitor extends ASTVisitor
 		catchedVariable = catchNode.getException().getName().getIdentifier();
 		catchedVariables.push(catchedVariable);
 		
-		
-		CatchEntry catchEntry = new CatchEntry (catchNode);
-		this.model.addCatchEntry (catchEntry);
+		this.model.addCatch (catchNode);
 		
 		return true;
 	}

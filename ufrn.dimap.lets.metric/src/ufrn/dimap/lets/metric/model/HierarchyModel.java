@@ -1,19 +1,23 @@
-package ufrn.dimap.lets.metric.model.hierarchy;
+package ufrn.dimap.lets.metric.model;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.ThrowStatement;
+import org.eclipse.jdt.core.dom.TryStatement;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import ufrn.dimap.lets.metric.model.CatchEntry;
-import ufrn.dimap.lets.metric.model.FinallyEntry;
-import ufrn.dimap.lets.metric.model.SignalerEntry;
-import ufrn.dimap.lets.metric.model.TryEntry;
+import ufrn.dimap.lets.metric.visitor.UnresolvedBindingException;
 
 public class HierarchyModel
 {
-	private TypeEntry root;
+	private static HierarchyModel instance = null;
+	
+	private TypeEntry typeRoot;
 	
 	private List<SignalerEntry> signalers;
 	private List<TryEntry> tries;
@@ -22,9 +26,9 @@ public class HierarchyModel
 	private int rethrows;
 	private int wrappings;
 	
-	public HierarchyModel ()
+	private HierarchyModel ()
 	{
-		this.root = null;
+		this.typeRoot = null;
 		
 		signalers = new ArrayList<SignalerEntry> ();
 		tries = new ArrayList<TryEntry> ();
@@ -35,120 +39,124 @@ public class HierarchyModel
 		wrappings = 0;
 	}
 	
-	public void addType (Stack<ITypeBinding> types)
+	public static HierarchyModel getInstance ()
 	{
-		if ( this.root == null)
+		if ( instance == null )
 		{
-			this.root = new TypeEntry ( types.peek() );
+			instance = new HierarchyModel();
 		}
 		
-		types.pop(); // retirar Object	
-		this.addTypeR(types, this.root);
-				
+		return instance;
 	}
 	
-	
-	public void addTypeR (Stack<ITypeBinding> typesStack, TypeEntry parentNode )
+	public static void clearInstance ()
 	{
-				
-		// Para cada tipo da pilha....
-		if ( typesStack.empty() == false )
+		instance = new HierarchyModel(); 
+	}
+	
+	// Os tipos são armazenados em um estrutura hierarquica, tendo java.lang.Object como raiz.
+	public TypeEntry getRoot()
+	{
+		return this.typeRoot;
+	}	
+	
+	// Procura este tipo no modelo. Se não houver, cria. Retorna o tipo criado.
+	public TypeEntry findOrCreateType (ITypeBinding typeBinding)
+	{
+		Stack<ITypeBinding> typesStack = HierarchyModel.createTypeHierarchy(typeBinding);
+		
+		if ( this.typeRoot == null)
+		{
+			this.typeRoot = new TypeEntry ( typesStack.peek() );
+		}
+		
+		TypeEntry typeEntry = this.findOrCreateTypeAux(typesStack);
+		
+		return typeEntry;
+	}
+	
+	// Chama o método findOrCreateType (ITypeBinding) e em seguida seta o node.
+	public TypeEntry findOrCreateType (TypeDeclaration typeNode)
+	{
+		TypeEntry typeEntry = this.findOrCreateType(typeNode.resolveBinding());
+		
+		typeEntry.setNode (typeNode);
+		
+		return typeEntry;
+	}
+	
+	public TypeEntry findOrCreateTypeAux (Stack<ITypeBinding> typesStack )
+	{
+		TypeEntry parentNode = this.typeRoot;
+		boolean found;
+		
+		typesStack.pop(); // remover Object
+		while ( !typesStack.empty() )
 		{
 			ITypeBinding peekType = typesStack.pop();
-			List <TypeEntry> subNodes = parentNode.subtypes;
-			
-			
-			// Procura ela na lista...
-			for ( TypeEntry subNode : subNodes )
+					
+			// Procura o topo na lista de subtipos...
+			found = false;
+			for ( TypeEntry subNode : parentNode.subtypes )
 			{
 				// Se encontrar, desce um nível e interrompe o laço.
 				if ( peekType.getQualifiedName().equals(((ITypeBinding)subNode.getBinding()).getQualifiedName() ))
 				{
-					addTypeR(typesStack, subNode);
-					return;
+					found = true;
+					parentNode = subNode;
+					break;
 				}
 			}
 			
-			// Se não encontrar, o tipo não existia na hierarquia. Cria-se um novo nó e continua a busca descendo um nível.
-			TypeEntry newNode = new TypeEntry(peekType); 
-			parentNode.subtypes.add(newNode);
-			newNode.superType = parentNode;
-			addTypeR(typesStack, newNode);
-		}
-	}
-	
-
-	public String toString()
-	{
-		return this.toStringR(this.root, "");
-	}
-	
-	public String toStringR(TypeEntry node, String tabs)
-	{
-		String result = "";
-			
-		result = tabs + ((ITypeBinding)node.getBinding()).getQualifiedName() + "\n";
-		
-		for ( TypeEntry n : node.subtypes )
-		{
-			result += this.toStringR(n, tabs+"\t");
+			// Se não encontrar, o tipo não existia na hierarquia. Cria-se um novo nó e continua a busca descendo um nível.			
+			if (!found)
+			{
+				TypeEntry newNode = new TypeEntry(peekType);
+				parentNode.subtypes.add(newNode);
+				newNode.superType = parentNode;
+				parentNode = newNode;
+			}
 		}
 		
-		return result;
+		return parentNode;
 	}
 	
-	public List<ITypeBinding> getAllTypes()
+	public SignalerEntry addSignaler (ThrowStatement throwNode)
 	{
-		List <ITypeBinding> types = new ArrayList<ITypeBinding>();
+		SignalerEntry signaler = new SignalerEntry (throwNode);
+		this.signalers.add(signaler);
 		
-		types.addAll(HierarchyModel.getAllTypesR(this.root));
+		// Associação as entidades entre si
+		//TypeEntry signaledType = this.findOrCreateType(signaler.signaledException);
+		//signaledType.signalers.add(signaler);
 		
-		return types;
-	}
-	
-	public static List<ITypeBinding> getAllTypesR(TypeEntry node)
-	{
-		List <ITypeBinding> types = new ArrayList<ITypeBinding>();
-		
-		types.add((ITypeBinding) node.getBinding());
-		
-		for ( TypeEntry n : node.subtypes )
-		{
-			types.addAll(HierarchyModel.getAllTypesR(n));
-		}
-		
-		return types;
+		return signaler;
 	}
 
-	public TypeEntry getRoot() {
-		return this.root;
+	public TryEntry addTry(TryStatement tryNode)
+	{
+		TryEntry tryEntry = new TryEntry(tryNode);
+		this.tries.add(tryEntry);
+		return tryEntry;
 	}
 	
-	/*
-	private static boolean compareTypes (IType typeA, IType typeB)
+	public CatchEntry addCatch(CatchClause catchNode)
 	{
-		return typeA.getFullyQualifiedName().equals(typeB.getFullyQualifiedName());
-	}
-	*/
-	
-	public void addSignalerEntry (SignalerEntry entry)
-	{
-		this.signalers.add(entry);
-	}
-
-	public void addTryEntry(TryEntry entry)
-	{
-		this.tries.add(entry);
+		CatchEntry catchEntry = new CatchEntry (catchNode);
+		this.catches.add(catchEntry);
+		
+		// Associação as entidades entre si
+		//TypeEntry catchedType = this.findOrCreateType(catchNode.getException().getType().resolveBinding());
+		//catchedType.catches.add(catchEntry);
+		
+		return catchEntry;
 	}
 	
-	public void addCatchEntry(CatchEntry entry)
+	public FinallyEntry addFinally(Block finallyBlock)
 	{
-		this.catches.add(entry);
-	}
-	
-	public void addFinallyEntry(FinallyEntry entry)
-	{
-		this.finallies.add(entry);
+		FinallyEntry finallyEntry = new FinallyEntry (finallyBlock);
+		this.finallies.add(finallyEntry);
+		return finallyEntry;
 	}
 	
 	public List<SignalerEntry> getSignalers()
@@ -190,4 +198,31 @@ public class HierarchyModel
 	{
 		this.wrappings++;
 	}
+	
+
+	// Esse método lança IllegalArgumentException se type não for uma classe.
+	private static Stack<ITypeBinding> createTypeHierarchy (ITypeBinding type)
+	{		
+		if ( type.isClass() )
+		{
+			Stack<ITypeBinding> typesStack = new Stack <ITypeBinding> ();
+			
+			while ( !type.getQualifiedName().equals("java.lang.Object") )
+			{
+				typesStack.push(type);
+				type = type.getSuperclass();
+			}
+			typesStack.push(type);
+			
+			return typesStack;
+		}
+		else
+		{
+			throw new IllegalArgumentException ("É esperada uma classe.\n\nARGUMENT: type\nVALUE: " + type.toString());
+		}
+	}
+	
+	
+	
+	
 }

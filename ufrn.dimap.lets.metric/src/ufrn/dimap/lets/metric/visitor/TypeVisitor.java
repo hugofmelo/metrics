@@ -1,50 +1,47 @@
 package ufrn.dimap.lets.metric.visitor;
 
-import java.util.Stack;
-
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import ufrn.dimap.lets.metric.model.hierarchy.HierarchyModel;
+import ufrn.dimap.lets.metric.model.HierarchyModel;
 
-public class ExceptionHierarchyVisitor extends ASTVisitor
+public class TypeVisitor extends ASTVisitor
 {
-	public HierarchyModel exceptionHierarchyModel;
+	public HierarchyModel hierarchyModel;
 	
-	// Essa pilha auxiliar serve para não calcular 2 vezes a hierarquia da exceção 
-	private Stack <ITypeBinding> typesStack;
-	
-	
-	public ExceptionHierarchyVisitor ( HierarchyModel exceptionHierarchyModel )
+	// Construtor
+	public TypeVisitor ()
 	{
-		this.exceptionHierarchyModel = exceptionHierarchyModel;
+		this.hierarchyModel = HierarchyModel.getInstance();
 	}
 	
+	// Métodos visit
 	public boolean visit (TypeDeclaration node)
-	{
-		ITypeBinding typeBinding;
+	{		
 		
-		typeBinding = node.resolveBinding();
-		
-				
-		if ( this.isSubtypeOfThrowable( typeBinding ) == true )
+		if ( isSubtypeOfThrowable( node.resolveBinding() ) )
 		{
-			this.exceptionHierarchyModel.addType(typesStack);
+			this.hierarchyModel.findOrCreateType(node);
 		}	
-
+		
+		/*
+		if ( !node.isInterface() )
+		{
+			this.hierarchyModel.addType (node);
+		}
+		*/
+		
 		return true;
 	}
 
-	private boolean isSubtypeOfThrowable (ITypeBinding type)
+	// Métodos auxiliares
+	private static boolean isSubtypeOfThrowable (ITypeBinding type)
 	{
-		this.typesStack = new Stack <ITypeBinding> ();
-		
 		return isSubtypeOfThrowableR (type);
 	}
 		
-	
-	private boolean isSubtypeOfThrowableR (ITypeBinding type)
+	private static boolean isSubtypeOfThrowableR (ITypeBinding type)
 	{
 		if (type.isClass() == false)
 		{
@@ -54,8 +51,6 @@ public class ExceptionHierarchyVisitor extends ASTVisitor
 		{
 			if ( type.getQualifiedName().equals("java.lang.Throwable") )
 			{
-				this.typesStack.push(type); // add Throwable
-				this.typesStack.push(type.getSuperclass()); // add Object
 				return true;
 			}
 			else if ( type.getQualifiedName().equals("java.lang.Object") )
@@ -70,15 +65,11 @@ public class ExceptionHierarchyVisitor extends ASTVisitor
 				}
 				else
 				{
-					this.typesStack.push(type);
 					return isSubtypeOfThrowableR(type.getSuperclass());
 				}
 			}
 		}
 	}
-	
-	
-
 }
 
 

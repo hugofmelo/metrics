@@ -24,8 +24,8 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
-import ufrn.dimap.lets.metric.model.hierarchy.HierarchyModel;
-import ufrn.dimap.lets.metric.model.hierarchy.TypeEntry;
+import ufrn.dimap.lets.metric.model.HierarchyModel;
+import ufrn.dimap.lets.metric.model.TypeEntry;
 
 
 /**

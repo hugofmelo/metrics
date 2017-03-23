@@ -3,7 +3,7 @@ package ufrn.dimap.lets.metric.model;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 
-public class SignalerEntry extends AbstractViewEntry
+public class SignalerEntry extends AbstractEntry
 {
 	public ITypeBinding signaledException;
 	public boolean rethrow;

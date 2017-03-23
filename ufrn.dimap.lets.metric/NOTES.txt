@@ -2,8 +2,8 @@ HOW TO USE
 
 
 NOTES
-Como abrir no Java Editor:
-
+O visitor deve fazer operações de análise estática. Ele nunca deve instanciar entidades do modelo.
+O modelo instancia suas entidades e então retorna para o visitor a instancia
 Estou usando 2 formas diferentes de abrir o editor Java com o código selecionado. Ao navegar pelos ASTNodes, em alguns deles é possível chamar "resolveBinding", resultando em um IBinding. Com ele, é possível chamar getJavaElement, que vai me dar um IJavaElement, que pode ser aberto no editor diretamente.
 ASTNode --> resolveBinding --> getJavaElement --> openInEditor
 

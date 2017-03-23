@@ -7,30 +7,34 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IBinding;
 
-public abstract class AbstractViewEntry
+public abstract class AbstractEntry
 {
 	private 	ASTNode				node;
 	private 	IBinding			binding;
 	
 
-	public AbstractViewEntry ( ASTNode node )
+	public AbstractEntry ( ASTNode node )
 	{
 		this.node = node;
 		this.binding = null;
 	}
 	
-	public AbstractViewEntry ( IBinding binding )
+	public AbstractEntry ( IBinding binding )
 	{
 		this.node = null;
 		this.binding = binding;
 	}
 	
-	public AbstractViewEntry ( ASTNode node, IBinding binding )
+	public AbstractEntry ( ASTNode node, IBinding binding )
 	{
 		this.node = node;
 		this.binding = binding;
 	}
 	
+	public void setNode (ASTNode node)
+	{
+		this.node = node;
+	}
 	
 	public ICompilationUnit getICompilationUnit ()
 	{
@@ -146,5 +150,17 @@ public abstract class AbstractViewEntry
 	public boolean hasNode()
 	{
 		return this.node != null;
+	}
+	
+	public String toString ()
+	{
+		String result = "";
+		
+		if ( this.hasNode() )
+		{
+			result += "Code snippet: " + this.node + "\n";
+		}
+		
+		return result;
 	}
 }

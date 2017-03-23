@@ -1,31 +1,33 @@
 package ufrn.dimap.lets.metric.views;
 
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.part.*;
-import org.eclipse.ui.texteditor.ITextEditor;
-
-import ufrn.dimap.lets.metric.model.CatchEntry;
-import ufrn.dimap.lets.metric.model.MetricsModel;
-import ufrn.dimap.lets.metric.model.SignalerEntry;
-import ufrn.dimap.lets.metric.model.AbstractViewEntry;
-
-import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.graphics.Image;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.*;
-import org.eclipse.ui.ide.IDE;
-import org.eclipse.swt.widgets.Menu;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.ViewPart;
+
+import ufrn.dimap.lets.metric.model.AbstractEntry;
+import ufrn.dimap.lets.metric.model.CatchEntry;
+import ufrn.dimap.lets.metric.model.HierarchyModel;
+import ufrn.dimap.lets.metric.model.SignalerEntry;
 
 
 /**
@@ -53,7 +55,7 @@ public class SignalersView extends ViewPart {
 	 */
 	public static final String ID = "ufrn.dimap.lets.metric.views.SignalersView";
 
-	private MetricsModel metricsModel;
+	private HierarchyModel model;
 	private TableViewer viewer;
 	private Action action1;
 	private Action action2;
@@ -107,9 +109,9 @@ public class SignalersView extends ViewPart {
 				
 				return rowItem;
 			}
-			else if ( obj instanceof AbstractViewEntry )
+			else if ( obj instanceof AbstractEntry )
 			{
-				AbstractViewEntry entry = (AbstractViewEntry) obj;
+				AbstractEntry entry = (AbstractEntry) obj;
 				
 				String rowItem = "";
 				
@@ -135,7 +137,7 @@ public class SignalersView extends ViewPart {
 		
 		@Override
 		public Object[] getElements(Object inputElement) {
-			MetricsModel model = (MetricsModel) inputElement;
+			HierarchyModel model = (HierarchyModel) inputElement;
 			
 			/*
 			List<SignalerEntry> signalers = new ArrayList<SignalerEntry> ();
@@ -151,7 +153,7 @@ public class SignalersView extends ViewPart {
 			return signalers.toArray();
 			*/
 			
-			return model.getCatches().toArray();
+			return model.getSignalers().toArray();
 		}
 	}
 
@@ -159,7 +161,7 @@ public class SignalersView extends ViewPart {
 	 * The constructor.
 	 */
 	public SignalersView() {
-		this.metricsModel = null;
+		this.model = null;
 	}
 
 	/**
@@ -169,7 +171,7 @@ public class SignalersView extends ViewPart {
 	
 	public void setViewInput (Object input)
 	{
-		this.metricsModel = (MetricsModel) input;
+		this.model = (HierarchyModel) input;
 		this.viewer.setInput(input);
 	}
 	
@@ -177,7 +179,7 @@ public class SignalersView extends ViewPart {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		
 		viewer.setContentProvider(new ViewContentProvider());
-		viewer.setInput(metricsModel);
+		viewer.setInput(model);
 		viewer.setLabelProvider(new ViewLabelProvider());
 
 		// Create the help context id for the viewer's control
@@ -247,9 +249,7 @@ public class SignalersView extends ViewPart {
 		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		
-		doubleClickAction = new Action() {
-			
-		};
+		doubleClickAction = new OpenEntryInEditorAction(viewer);
 	}
 
 	private void hookDoubleClickAction() {
