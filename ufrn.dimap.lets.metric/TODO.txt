@@ -1,0 +1,43 @@
+ALGORITMO
+Inicia o visitor
+	Para cada método
+		visit
+			Verificar se já foi visitado
+				Sim
+					return false
+				Não
+					return true
+		Post visit
+			parsear o código
+				Para cada chamada de método
+					Verificar a interface excepcional
+						Há exceções?
+							Sim
+								A chamada está em um try?
+									Sim
+										Marcar a chamada com @throws
+										
+										Verificar se as exceções são capturadas
+											Sim
+												Verificar se a exceção é encapsulada e relançada
+													Sim
+														Adicionar a exceção no "remaps" do método
+													Não
+														Adicionar a exceção no "catches" do método
+											Não
+												Adicionar as exceções no "rethrows" do método
+									Não
+										Adicionar as exceções no "rethrows" do método
+							Não
+								Nada a fazer
+				Para cada throw que não está em um catch e nem num try
+					Adicionar a exceção no "throws" do método
+	
+				identificar os remaps
+					procurar pelos throws dentro dos catches
+				identificar os catches
+				identificar os rethrows
+			marcar como visitado
+				
+				
+			

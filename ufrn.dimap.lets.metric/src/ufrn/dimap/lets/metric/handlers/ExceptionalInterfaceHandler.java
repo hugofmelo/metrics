@@ -3,15 +3,29 @@ package ufrn.dimap.lets.metric.handlers;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchy;
+import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchyVisitor;
+import org.eclipse.jdt.internal.corext.callhierarchy.MethodCall;
+import org.eclipse.jdt.internal.corext.callhierarchy.MethodWrapper;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.PlatformUI;
 
 import ufrn.dimap.lets.metric.model.CatchEntry;
@@ -19,12 +33,11 @@ import ufrn.dimap.lets.metric.model.FinallyEntry;
 import ufrn.dimap.lets.metric.model.HierarchyModel;
 import ufrn.dimap.lets.metric.model.SignalerEntry;
 import ufrn.dimap.lets.metric.model.TryEntry;
-import ufrn.dimap.lets.metric.views.SignalersView;
 import ufrn.dimap.lets.metric.visitor.MetricsVisitor;
 import ufrn.dimap.lets.metric.visitor.UncommonCodePatternException;
 import ufrn.dimap.lets.metric.visitor.UncommonSignalerPatternException;
 
-public class AllMetricsHandler extends AbstractHandler
+public class ExceptionalInterfaceHandler extends AbstractHandler
 {	
 	private final String reportSignalers = "D:/Desenvolvimento/Resultados/signalers.txt";
 	private final String reportTries = "D:/Desenvolvimento/Resultados/tries.txt";
@@ -34,49 +47,75 @@ public class AllMetricsHandler extends AbstractHandler
 	
 	public Object execute(ExecutionEvent event) throws ExecutionException
 	{
-		List<ICompilationUnit> compilationUnits;
+		System.out.println("Ok. Pode implementar agora");
 		
-		try 
+		try
 		{
-			// Listando todos os compilation units selecionados
-			compilationUnits = HandlerUtil.getAllCompilationUnits();
+			ICompilationUnit compilationUnit = getSelectedCompilationUnit();
 			
-			// Resetando o modelo para receber os dados
-			HierarchyModel.clearInstance();
-			this.model = HierarchyModel.getInstance();
-			
-			
-			// Processando o código, extraindo dados e armazenando no modelo
-			parse( compilationUnits );
-			
-			
-			// Exibindo a view para o usuario, e populando-a em seguida
-			SignalersView view = (SignalersView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView( SignalersView.ID);
-			view.setViewInput(this.model);
-						
-			// Gerando relatório em txt
-			this.createReport ();
-			
+			IType types[] = compilationUnit.getTypes();
+			for ( IType type : types )
+			{
+				IMethod methods[] = type.getMethods();
+				
+				for ( IMethod method : methods )
+				{
+					//System.out.println( method.getElementName() );
+					
+					this.aaa(method);
+				}
+				
+			}
 		}
 		catch (JavaModelException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		catch (PartInitException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-
+		
 		return null;
 	}
 
+	public class CHVisitor extends CallHierarchyVisitor
+	{
+		public boolean visit (MethodWrapper methodWrapper)
+		{
+			System.out.println(methodWrapper.getName());
+			
+			return true;
+		}
+	}
+	
+	
+	private void aaa ( IMethod method )
+	{
+		CHVisitor visitor = new CHVisitor();
+		
+		CallHierarchy hierarchy = new CallHierarchy();
+		IJavaSearchScope searchScope = SearchEngine.createWorkspaceScope();
+		hierarchy.setSearchScope(searchScope);
+		ArrayList<MethodCall> methodCalls = new ArrayList<MethodCall>();
+		
+		MethodWrapper[] calleeWrapper = hierarchy.getCalleeRoots(new IMethod[]{method});
+		calleeWrapper[0].accept(visitor, new NullProgressMonitor());
+		ArrayList<MethodWrapper> callsWrapper = new ArrayList<MethodWrapper>();
+		for (int i = 0; i < calleeWrapper.length; i++) 
+		{
+			MethodWrapper[] aaa = calleeWrapper[i].getCalls(new NullProgressMonitor());
+			callsWrapper.addAll(Arrays.asList(aaa));
+		}
+
+		for (int i = 0; i < callsWrapper.size(); i++)
+		    methodCalls.add(callsWrapper.get(i).getMethodCall());
+		// Now you will get method calls in methodCalls list.
+		
+		for ( MethodCall methodCall : methodCalls )
+		{
+			System.out.println(methodCall.getMember());
+		}
+		
+	}
+	
 	private void createReport() throws IOException
 	{
 		this.createSignalersReport();
@@ -252,5 +291,24 @@ public class AllMetricsHandler extends AbstractHandler
 		{
 			outputFile.close();
 		}
+	}
+	
+	public static ICompilationUnit getSelectedCompilationUnit () throws JavaModelException
+	{
+		ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		ISelection selection = selectionService.getSelection();    
+		
+		// Buscar por todos os packages selecionados
+		if(selection instanceof StructuredSelection)
+		{
+			Object element = ((StructuredSelection)selection).getFirstElement();
+			
+			if( element instanceof ICompilationUnit)
+			{
+				return (ICompilationUnit) element;	
+			}
+		}
+		
+		return null;
 	}
 }

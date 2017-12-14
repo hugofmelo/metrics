@@ -10,7 +10,7 @@ public abstract class UncommonCodePatternException extends RuntimeException
 	public UncommonCodePatternException (String msg, ASTNode node)
 	{
 		super (msg);
-		astNode = node;
+		this.astNode = node;
 	}
 	
 	public String getCodeSnippet ()

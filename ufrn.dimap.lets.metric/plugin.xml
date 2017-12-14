@@ -11,6 +11,10 @@
             id="ufrn.dimap.lets.metric.exceptionhierarchy"
             name="Exception Hierarchy">
       </command>
+      <command
+            id="ufrn.dimap.lets.metric.exceptionalinterface"
+            name="Generate Exceptional Interface">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -27,6 +31,16 @@
                label="Create exception hierarchy"
                style="push">
          </command>
+         <command
+               commandId="ufrn.dimap.lets.metric.exceptionalinterface"
+               label="Generate Exceptional Interface"
+               name="Generate Exceptional Interface"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
       </menuContribution>
    </extension>
    <extension
@@ -38,6 +52,10 @@
       <handler
             class="ufrn.dimap.lets.metric.handlers.ExceptionHierarchyHandler"
             commandId="ufrn.dimap.lets.metric.exceptionhierarchy">
+      </handler>
+      <handler
+            class="ufrn.dimap.lets.metric.handlers.ExceptionalInterfaceHandler"
+            commandId="ufrn.dimap.lets.metric.exceptionalinterface">
       </handler>
    </extension>
    <extension
