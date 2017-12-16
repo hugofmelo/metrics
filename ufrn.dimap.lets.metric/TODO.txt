@@ -1,3 +1,15 @@
+Parsear projetos standalone - https://www.programcreek.com/2011/01/a-complete-standalone-example-of-astparser/
+
+Para parsear o método, é preciso que o código-fonte dele esteja disponível.
+	Aplicação: o código da própria aplicação é obviamente garantido.
+	Java: Código java é parcialmente garantido, porque alguns pacotes são proprietários e não há fonte para eles.
+	Dependencias: É comum que o código fonte de dependencias gradle sejam baixados e linkados automaticamente. Não sei do Maven e outros.
+	A recomendação é: usuário, faça de tudo para ter o código fonte de todas as dependencias. Se o código não existir, a análise levará em consideração somente a interface excepcional declarada, o que é péssimo. Como se sabe, todo esse trabalho é motivado pelo fato das interfaces excepcionais declaradas serem incompletas e imprecisas.
+		  O que se pode fazer nesse caso é adicionar uma análise dinâmica. Especialmente para os métodos sem fonte, qualquer ocorrência de exceção é verificada e adicionada à base de dados.
+Métodos native são um problema. Não existe código para eles!
+	Confiar somente na declaração
+		Adicionar no DB se encontrar exceção em runtime.			
+
 ALGORITMO
 Inicia o visitor
 	Para cada método

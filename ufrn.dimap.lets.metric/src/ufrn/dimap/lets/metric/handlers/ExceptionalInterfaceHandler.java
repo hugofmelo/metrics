@@ -33,9 +33,12 @@ import ufrn.dimap.lets.metric.model.FinallyEntry;
 import ufrn.dimap.lets.metric.model.HierarchyModel;
 import ufrn.dimap.lets.metric.model.SignalerEntry;
 import ufrn.dimap.lets.metric.model.TryEntry;
+import ufrn.dimap.lets.metric.model.exceptionalinterface.Method;
+import ufrn.dimap.lets.metric.model.exceptionalinterface.Type;
 import ufrn.dimap.lets.metric.visitor.MetricsVisitor;
 import ufrn.dimap.lets.metric.visitor.UncommonCodePatternException;
 import ufrn.dimap.lets.metric.visitor.UncommonSignalerPatternException;
+import ufrn.dimap.lets.metric.visitor.exceptionalinterface.CalleeHierarchyVisitor;
 
 public class ExceptionalInterfaceHandler extends AbstractHandler
 {	
@@ -76,20 +79,12 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 		return null;
 	}
 
-	public class CHVisitor extends CallHierarchyVisitor
-	{
-		public boolean visit (MethodWrapper methodWrapper)
-		{
-			System.out.println(methodWrapper.getName());
-			
-			return true;
-		}
-	}
+	
 	
 	
 	private void aaa ( IMethod method )
 	{
-		CHVisitor visitor = new CHVisitor();
+		CalleeHierarchyVisitor visitor = new CalleeHierarchyVisitor();
 		
 		CallHierarchy hierarchy = new CallHierarchy();
 		IJavaSearchScope searchScope = SearchEngine.createWorkspaceScope();
@@ -98,6 +93,25 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 		
 		MethodWrapper[] calleeWrapper = hierarchy.getCalleeRoots(new IMethod[]{method});
 		calleeWrapper[0].accept(visitor, new NullProgressMonitor());
+		
+		Method resultMethod = visitor.methods.get(calleeWrapper[0].getMember().getHandleIdentifier());
+		
+		System.out.println("Thrown types: ");
+		for ( String thrownType : resultMethod.thrownTypes )
+		{
+			System.out.println(thrownType);
+		}
+		System.out.println();
+		
+		System.out.println("Rethrown types: ");
+		for ( String rethrownType : resultMethod.rethrownTypes )
+		{
+			System.out.println(rethrownType);
+		}
+		System.out.println();
+		
+		
+		/*
 		ArrayList<MethodWrapper> callsWrapper = new ArrayList<MethodWrapper>();
 		for (int i = 0; i < calleeWrapper.length; i++) 
 		{
@@ -113,7 +127,7 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 		{
 			System.out.println(methodCall.getMember());
 		}
-		
+		*/
 	}
 	
 	private void createReport() throws IOException

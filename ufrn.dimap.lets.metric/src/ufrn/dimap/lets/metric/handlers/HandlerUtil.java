@@ -91,11 +91,46 @@ public class HandlerUtil
 	 * @return
 	 */
 	public static CompilationUnit parse(ICompilationUnit unit) {
+		
+		try {
+			String s = unit.getSource();
+			ASTParser parser = ASTParser.newParser(AST.JLS8);
+			parser.setResolveBindings(true);
+			parser.setKind(ASTParser.K_COMPILATION_UNIT);
+			parser.setSource(unit);
+
+			return (CompilationUnit) parser.createAST(null);
+		} catch (JavaModelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		
+		
+	}
+	
+	/**
+	 * Recebe uma string que representa o código de um método. 
+	 *
+	 * @param sourceCode de um método
+	 * @return
+	 */
+	public static CompilationUnit parseMethod(String sourceCode)
+	{
+		if ( sourceCode == null )
+		{
+			
+		}
+		// A argumento sourceCode representa um único método. Como o parser do eclipse não aceita parsear somente um método, nós encapsulamos ele em uma classe. 
+		String dummyClass = "public class A {"+ sourceCode + "}";
+		
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setSource(unit);
+		parser.setSource(dummyClass.toCharArray());
 
 		return (CompilationUnit) parser.createAST(null);
+		
+		
 	}
 }

@@ -19,11 +19,10 @@ Organizar o código
 Criar documento de como usar
 Criar documento explicando a arquitetura
 Hospedar no GitHub
-Verificar na hora de abrir o Java Editor oq é necessário para selecionar o texto
 Modificar o método isSubtypeOfThrowable para stackar as exceções
 Refatorar parte de AllMetrics da ferramenta
 	
-Olha páginas salvas quando quiser melhorar o plugin
+Olhar páginas salvas quando quiser melhorar o plugin
 
 
 
