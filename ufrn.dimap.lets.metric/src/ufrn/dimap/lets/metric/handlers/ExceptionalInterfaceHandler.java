@@ -12,6 +12,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -42,6 +43,7 @@ import ufrn.dimap.lets.metric.visitor.exceptionalinterface.CalleeHierarchyVisito
 
 public class ExceptionalInterfaceHandler extends AbstractHandler
 {	
+	private IJavaProject javaProject;
 	private final String reportSignalers = "D:/Desenvolvimento/Resultados/signalers.txt";
 	private final String reportTries = "D:/Desenvolvimento/Resultados/tries.txt";
 	private final String reportCatches = "D:/Desenvolvimento/Resultados/catches.txt";
@@ -55,6 +57,8 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 		try
 		{
 			ICompilationUnit compilationUnit = getSelectedCompilationUnit();
+
+			this.javaProject = compilationUnit.getJavaProject();
 			
 			IType types[] = compilationUnit.getTypes();
 			for ( IType type : types )
@@ -94,22 +98,23 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 		MethodWrapper[] calleeWrapper = hierarchy.getCalleeRoots(new IMethod[]{method});
 		calleeWrapper[0].accept(visitor, new NullProgressMonitor());
 		
-		Method resultMethod = visitor.methods.get(calleeWrapper[0].getMember().getHandleIdentifier());
+		//Method resultMethod = visitor.methods.get(calleeWrapper[0].getMember().getHandleIdentifier());
 		
+		/*
 		System.out.println("Thrown types: ");
-		for ( String thrownType : resultMethod.thrownTypes )
+		for ( String thrownType : resultMethod.getThrownTypes() )
 		{
 			System.out.println(thrownType);
 		}
 		System.out.println();
 		
 		System.out.println("Rethrown types: ");
-		for ( String rethrownType : resultMethod.rethrownTypes )
+		for ( String rethrownType : resultMethod.getRethrownTypes() )
 		{
 			System.out.println(rethrownType);
 		}
 		System.out.println();
-		
+		*/
 		
 		/*
 		ArrayList<MethodWrapper> callsWrapper = new ArrayList<MethodWrapper>();

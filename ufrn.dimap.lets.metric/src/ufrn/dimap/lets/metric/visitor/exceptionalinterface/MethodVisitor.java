@@ -8,6 +8,7 @@ import java.util.Set;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.Type;
@@ -32,7 +33,19 @@ public class MethodVisitor extends ASTVisitor
 		if ( throwExpression instanceof ClassInstanceCreation )
 		{			
 			ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) throwExpression;
-			thrownTypes.add(classInstanceCreation.getType().toString());
+			ITypeBinding binding = classInstanceCreation.getType().resolveBinding();
+			String exceptionName;
+			
+			if ( binding != null )
+			{
+				exceptionName = classInstanceCreation.getType().resolveBinding().getQualifiedName();
+			}
+			else
+			{
+				exceptionName = classInstanceCreation.getType().toString();
+			}
+			
+			thrownTypes.add(exceptionName);
 		}
 		
 		

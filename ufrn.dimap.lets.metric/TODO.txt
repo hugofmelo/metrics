@@ -1,5 +1,9 @@
 Parsear projetos standalone - https://www.programcreek.com/2011/01/a-complete-standalone-example-of-astparser/
 
+TODO
+Verificar qual o código fonte de métodos "native"
+Testar (com testes de verdade) se o call graph que eu uso corresponde ao call graph verdadeiro
+
 Para parsear o método, é preciso que o código-fonte dele esteja disponível.
 	Aplicação: o código da própria aplicação é obviamente garantido.
 	Java: Código java é parcialmente garantido, porque alguns pacotes são proprietários e não há fonte para eles.
@@ -8,21 +12,22 @@ Para parsear o método, é preciso que o código-fonte dele esteja disponível.
 		  O que se pode fazer nesse caso é adicionar uma análise dinâmica. Especialmente para os métodos sem fonte, qualquer ocorrência de exceção é verificada e adicionada à base de dados.
 Métodos native são um problema. Não existe código para eles!
 	Confiar somente na declaração
-		Adicionar no DB se encontrar exceção em runtime.			
+		Adicionar no DB se encontrar exceção em runtime.
+Métodos que não puderam ser parseados (ver itens acima) levam a interface excepcional declarada consigo e um tipo especial de exceção (ou marcação) que indica que ele não foi parseado.  			
 
-ALGORITMO
-Inicia o visitor
+ALGORITMO - Abrir classe no editor
+Inicia o visitor callee
 	Para cada método
 		visit
 			Verificar se já foi visitado
 				Sim
-					return false
+					return false (ainda assim será chamado postVisitor para este método. Os seus filhos é que não vão ser visitados)
 				Não
 					return true
 		Post visit
 			parsear o código
 				Para cada chamada de método
-					Verificar a interface excepcional
+					Verificar a interface excepcional daquele método
 						Há exceções?
 							Sim
 								A chamada está em um try?
@@ -42,14 +47,21 @@ Inicia o visitor
 										Adicionar as exceções no "rethrows" do método
 							Não
 								Nada a fazer
-				Para cada throw que não está em um catch e nem num try
+				Para cada throw que não está em um catch e nem em um try
 					Adicionar a exceção no "throws" do método
-	
-				identificar os remaps
-					procurar pelos throws dentro dos catches
-				identificar os catches
-				identificar os rethrows
-			marcar como visitado
+			Marcar como visitado
 				
-				
+
+ALGORITMO - Salvar arquivo
+Parsear método
+	Verificar se a interface excepcional mudou
+		Sim
+			Iniciar visitor caller
+				Para método, verificar se a interface mudou
+					Sim
+						Processar e repetir
+					Não
+						Finalizar a visita a esse galho
+		Não
+			Nada a fazer		
 			
