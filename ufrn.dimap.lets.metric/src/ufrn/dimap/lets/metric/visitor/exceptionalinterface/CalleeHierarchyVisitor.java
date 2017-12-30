@@ -53,6 +53,7 @@ public class CalleeHierarchyVisitor extends CallHierarchyVisitor
 		
 		return true;
 		*/
+		
 		tabs++;
 
 		String methodIdentifier = methodWrapper.getMember().getHandleIdentifier();		
@@ -80,7 +81,7 @@ public class CalleeHierarchyVisitor extends CallHierarchyVisitor
 			methodsCalls.put(methodIdentifier, status+1);
 			return false;
 		}
-
+		
 		/*
 		System.out.print("getMethodCall - ");
 		System.out.println(methodWrapper.getMethodCall());
@@ -158,7 +159,7 @@ public class CalleeHierarchyVisitor extends CallHierarchyVisitor
 		{
 			CompilationUnit compilationUnit = HandlerUtil.parse(caller);
 
-			MethodVisitor methodVisitor = new MethodVisitor();
+			MethodVisitor methodVisitor = new MethodVisitor(caller);
 			compilationUnit.accept(methodVisitor);
 
 

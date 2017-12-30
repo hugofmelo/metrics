@@ -5,10 +5,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.Type;
@@ -19,11 +21,19 @@ import ufrn.dimap.lets.metric.visitor.UncommonSignalerPatternException;
 
 public class MethodVisitor extends ASTVisitor
 {
+	private IMethod targetMethod;
 	public Set<String> thrownTypes;
 	
-	public MethodVisitor ()
+	public MethodVisitor (IMethod method)
 	{
 		thrownTypes = new HashSet<>();
+		targetMethod = method;
+	}
+	
+	public boolean visit ( MethodDeclaration method )
+	{
+		// O binding não deve ser null porque esse visitor só deve ser chamado em métodos parseáveis (que tem código-fonte)
+		return ((IMethod)method.resolveBinding().getJavaElement()).getHandleIdentifier().equals(targetMethod.getHandleIdentifier());
 	}
 	
 	public boolean visit (ThrowStatement throwNode)

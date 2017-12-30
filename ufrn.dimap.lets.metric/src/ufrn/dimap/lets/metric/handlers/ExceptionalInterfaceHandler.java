@@ -4,16 +4,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
@@ -21,9 +18,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchy;
-import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchyVisitor;
 import org.eclipse.jdt.internal.corext.callhierarchy.MethodCall;
-import org.eclipse.jdt.internal.corext.callhierarchy.MethodWrapper;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionService;
@@ -35,30 +30,34 @@ import ufrn.dimap.lets.metric.model.HierarchyModel;
 import ufrn.dimap.lets.metric.model.SignalerEntry;
 import ufrn.dimap.lets.metric.model.TryEntry;
 import ufrn.dimap.lets.metric.model.exceptionalinterface.Method;
-import ufrn.dimap.lets.metric.model.exceptionalinterface.Type;
 import ufrn.dimap.lets.metric.visitor.MetricsVisitor;
 import ufrn.dimap.lets.metric.visitor.UncommonCodePatternException;
 import ufrn.dimap.lets.metric.visitor.UncommonSignalerPatternException;
 import ufrn.dimap.lets.metric.visitor.exceptionalinterface.CalleeHierarchyVisitor;
+import ufrn.dimap.lets.metric.visitor.exceptionalinterface.ExceptionalInterfaceGeneratorVisitor;
 
 public class ExceptionalInterfaceHandler extends AbstractHandler
 {	
-	private IJavaProject javaProject;
 	private final String reportSignalers = "D:/Desenvolvimento/Resultados/signalers.txt";
 	private final String reportTries = "D:/Desenvolvimento/Resultados/tries.txt";
 	private final String reportCatches = "D:/Desenvolvimento/Resultados/catches.txt";
 	private final String reportFinallies = "D:/Desenvolvimento/Resultados/finallies.txt";
 	private HierarchyModel model;
+	private ExceptionalInterfaceGeneratorVisitor visitor;
+	
 	
 	public Object execute(ExecutionEvent event) throws ExecutionException
 	{
-		System.out.println("Ok. Pode implementar agora");
+		CallHierarchy hierarchy = new CallHierarchy();
+		IJavaSearchScope searchScope = SearchEngine.createWorkspaceScope();
+		hierarchy.setSearchScope(searchScope);
+		visitor = new ExceptionalInterfaceGeneratorVisitor(hierarchy);
+		
+		
 		
 		try
 		{
 			ICompilationUnit compilationUnit = getSelectedCompilationUnit();
-
-			this.javaProject = compilationUnit.getJavaProject();
 			
 			IType types[] = compilationUnit.getTypes();
 			for ( IType type : types )
@@ -88,33 +87,24 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 	
 	private void aaa ( IMethod method )
 	{
-		CalleeHierarchyVisitor visitor = new CalleeHierarchyVisitor();
+		visitor.accept(method);
 		
-		CallHierarchy hierarchy = new CallHierarchy();
-		IJavaSearchScope searchScope = SearchEngine.createWorkspaceScope();
-		hierarchy.setSearchScope(searchScope);
-		ArrayList<MethodCall> methodCalls = new ArrayList<MethodCall>();
+		Method resultMethod = visitor.getMethods().get(method.getHandleIdentifier());
 		
-		MethodWrapper[] calleeWrapper = hierarchy.getCalleeRoots(new IMethod[]{method});
-		calleeWrapper[0].accept(visitor, new NullProgressMonitor());
+		System.out.println(resultMethod.getIdentifier());
 		
-		//Method resultMethod = visitor.methods.get(calleeWrapper[0].getMember().getHandleIdentifier());
-		
-		/*
-		System.out.println("Thrown types: ");
+		System.out.println("Thrown: ");
 		for ( String thrownType : resultMethod.getThrownTypes() )
 		{
 			System.out.println(thrownType);
 		}
-		System.out.println();
 		
-		System.out.println("Rethrown types: ");
+		System.out.println("Rethrown: ");
 		for ( String rethrownType : resultMethod.getRethrownTypes() )
 		{
 			System.out.println(rethrownType);
 		}
 		System.out.println();
-		*/
 		
 		/*
 		ArrayList<MethodWrapper> callsWrapper = new ArrayList<MethodWrapper>();

@@ -1,9 +1,19 @@
 Parsear projetos standalone - https://www.programcreek.com/2011/01/a-complete-standalone-example-of-astparser/
 
 TODO
-Verificar qual o código fonte de métodos "native"
+CANCELADO Verificar qual o código fonte de métodos "native"
+DONE Implementar callgraph e busca em profundidade
+Organizar o código do callgraph, refatorando o que for necessário e comentando tudo
+Enriquecer o parser do método (ver algoritmo abaixo)
+	throws
+	rethrows
+	remaps
+	catches
 Testar (com testes de verdade) se o call graph que eu uso corresponde ao call graph verdadeiro
+Idéia: Criar um grafo, de fato, das chamadas. Ver o desempenho.
+	Com o grafo, eu posso identificar as chamadas de método individuais (diferente do eclipse, que une chamadas iguais). Além disso, eu posso determinar as exceções por chamada, e talvez até colocar a quantidade de ocorrências distintas de exceções, seguindo a idéia inicial que está na proposta e na classe TraceabilityExample
 
+OBSERVAÇÕES
 Para parsear o método, é preciso que o código-fonte dele esteja disponível.
 	Aplicação: o código da própria aplicação é obviamente garantido.
 	Java: Código java é parcialmente garantido, porque alguns pacotes são proprietários e não há fonte para eles.
@@ -14,6 +24,10 @@ Métodos native são um problema. Não existe código para eles!
 	Confiar somente na declaração
 		Adicionar no DB se encontrar exceção em runtime.
 Métodos que não puderam ser parseados (ver itens acima) levam a interface excepcional declarada consigo e um tipo especial de exceção (ou marcação) que indica que ele não foi parseado.  			
+Limitações
+	Ver classe IndirectRecursion
+	Ver classe AnonymousClasses
+
 
 ALGORITMO - Abrir classe no editor
 Inicia o visitor callee
