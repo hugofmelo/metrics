@@ -1,39 +1,146 @@
 package ufrn.dimap.lets.metric.visitor.exceptionalinterface;
 
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
-import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
+import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
+import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.ThrowStatement;
-import org.eclipse.jdt.core.dom.Type;
-import org.omg.PortableServer.ThreadPolicyOperations;
+import org.eclipse.jdt.core.dom.TryStatement;
 
-import ufrn.dimap.lets.metric.model.SignalerEntry;
-import ufrn.dimap.lets.metric.visitor.UncommonSignalerPatternException;
+import ufrn.dimap.lets.metric.model.exceptionalinterface.Method;
 
+/**
+ * O MethodVisitor deve ser chamado a partir de um MethodDeclaration.*/
 public class MethodVisitor extends ASTVisitor
 {
-	private IMethod targetMethod;
+	private Map<String, Method> methods;
+	
+	private Stack<TryStatement> tries;
+	private Stack<CatchClause> catches;
+	
 	public Set<String> thrownTypes;
 	
-	public MethodVisitor (IMethod method)
+	public MethodVisitor (Map<String, Method> methods)
 	{
+		this.methods = methods;
+		
+		tries = new Stack<>();
+		catches = new Stack<>();
+		
 		thrownTypes = new HashSet<>();
-		targetMethod = method;
 	}
 	
-	public boolean visit ( MethodDeclaration method )
+	public boolean visit ( TryStatement tryStatement )
 	{
-		// O binding não deve ser null porque esse visitor só deve ser chamado em métodos parseáveis (que tem código-fonte)
-		return ((IMethod)method.resolveBinding().getJavaElement()).getHandleIdentifier().equals(targetMethod.getHandleIdentifier());
+		this.tries.push(tryStatement);
+		return true;
+	}
+	
+	public void endVisit ( TryStatement tryStatement )
+	{
+		this.tries.pop();
+	}
+	
+	public boolean visit ( CatchClause catchClause )
+	{
+		this.catches.push(catchClause);
+		return true;	
+	}
+	
+	public void endVisit ( CatchClause catchClause )
+	{
+		this.catches.pop();
+	}
+	
+	public boolean visit ( MethodInvocation methodInvocation )
+	{
+		if ( methods.get(methodInvocation.resolveMethodBinding().getJavaElement().getHandleIdentifier()) == null )
+		{
+			System.err.println("Método não está na lista de processados!!!");
+			System.err.println(methodInvocation.toString());
+			System.err.println();
+		}
+		else
+		{
+			System.out.println(methodInvocation.toString());
+			System.out.println();
+		}
+		
+		
+		
+		
+		return true;
+	}
+	
+	public boolean visit ( ClassInstanceCreation instanceCreation )
+	{
+		if ( methods.get(instanceCreation.resolveConstructorBinding().getJavaElement().getHandleIdentifier()) == null )
+		{
+			System.err.println("Método não está na lista de processados!!!");
+			System.err.println(instanceCreation.toString());
+			System.err.println();
+		}
+		else
+		{
+			System.out.println(instanceCreation.toString());
+			System.out.println();
+		}
+		
+		return true;
+	}
+	
+	public boolean visit ( SuperMethodInvocation methodInvocation )
+	{
+		if ( methods.get(methodInvocation.resolveMethodBinding().getJavaElement().getHandleIdentifier()) == null )
+		{
+			System.err.println("Método não está na lista de processados!!!");
+			System.err.println(methodInvocation.toString());
+			System.err.println();
+		}
+		else
+		{
+			System.out.println(methodInvocation.toString());
+			System.out.println();
+		}
+		
+		
+		
+		return true;
+	}
+	
+	public boolean visit ( SuperConstructorInvocation instanceCreation )
+	{
+		if ( methods.get(instanceCreation.resolveConstructorBinding().getJavaElement().getHandleIdentifier()) == null )
+		{
+			System.err.println("Método não está na lista de processados!!!");
+			System.err.println(instanceCreation.toString());
+			System.err.println();
+		}
+		else
+		{
+			System.out.println(instanceCreation.toString());
+			System.out.println();
+		}
+		
+		
+		
+		return true;
+	}
+	
+	private void processMethodInvocation ( IMethodBinding methodBinding  )
+	{
+		
 	}
 	
 	public boolean visit (ThrowStatement throwNode)

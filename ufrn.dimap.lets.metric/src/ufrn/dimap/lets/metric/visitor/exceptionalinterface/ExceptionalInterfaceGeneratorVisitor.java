@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchy;
 import org.eclipse.jdt.internal.corext.callhierarchy.MethodWrapper;
 
@@ -36,7 +40,7 @@ public class ExceptionalInterfaceGeneratorVisitor extends CallgraphVisitor
 	{
 		tabs++;
 
-		ExceptionalInterfaceGeneratorVisitor.println(method.getHandleIdentifier() + " DESCOBERTO");
+		//ExceptionalInterfaceGeneratorVisitor.println(method.getHandleIdentifier() + " DESCOBERTO");
 	}
 
 	@Override
@@ -55,12 +59,17 @@ public class ExceptionalInterfaceGeneratorVisitor extends CallgraphVisitor
 			throw new ShouldNotHappenException(e);
 		}
 
-		ExceptionalInterfaceGeneratorVisitor.println(methodIdentifier + " FINALIZADO");
+		//ExceptionalInterfaceGeneratorVisitor.println(methodIdentifier + " FINALIZADO");
 		
 		tabs--;
 	}
 
-
+	/**
+	 * Adiciona o método no modelo.
+	 * 
+	 * @param	caller	O método que será adicionado ao modelo.
+	 * @param	callees		Os métodos chamados pelo método que será adicionado ao modelo.
+	 * */
 	private void createNewMethod(IMethod caller, List<IMethod> callees) throws JavaModelException
 	{
 		// Nova instancia de Method que vai ser salva
@@ -69,9 +78,10 @@ public class ExceptionalInterfaceGeneratorVisitor extends CallgraphVisitor
 		if ( isParseable (caller) )
 		{
 			CompilationUnit compilationUnit = HandlerUtil.parse(caller);
-
-			MethodVisitor methodVisitor = new MethodVisitor(caller);
-			compilationUnit.accept(methodVisitor);
+			MethodDeclaration methodDeclaration = MethodFinder.find ( caller, compilationUnit );
+			
+			MethodVisitor methodVisitor = new MethodVisitor(methods);
+			methodDeclaration.accept(methodVisitor);
 
 			newMethod.addThrownTypes(methodVisitor.thrownTypes);
 
@@ -96,6 +106,7 @@ public class ExceptionalInterfaceGeneratorVisitor extends CallgraphVisitor
 
 	}
 
+	// O IMethod possui um array de strings que representam as exceções da interface excepcional declarada. As strings estão num formato diferente. Este método convete o array com nomes estranhos em uma lista de tamanhos normais.
 	private List<String> getDeclaredException(IMethod method) throws JavaModelException
 	{
 		List<String> exceptions = new ArrayList<>();
@@ -108,17 +119,23 @@ public class ExceptionalInterfaceGeneratorVisitor extends CallgraphVisitor
 		return exceptions;
 	}
 
-
-	// O método é parseable se possui um CompilationUnit || possui um ClassFile com código-fonte associado
+	/**
+	 * O IMethod é parseable se não é nativo e possui código-fonte (é um CompilationUnit ou um ClassFile com código-fonte linkado).
+	 * @param	method	O método a ser testado.
+	 * */
 	private boolean isParseable(IMethod method) throws JavaModelException
-	{			
-		if ( method.getCompilationUnit() != null )
+	{		
+		if ( method.getCompilationUnit() != null ||
+			(method.getClassFile() != null && method.getClassFile().getSource() != null))
 		{
-			return true;
-		}
-		else if ( method.getClassFile() != null && method.getClassFile().getSource() != null )
-		{
-			return true;
+			if ( !isAbstract (method.getSource()) )
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 		else
 		{
@@ -126,6 +143,19 @@ public class ExceptionalInterfaceGeneratorVisitor extends CallgraphVisitor
 		}
 	}
 	
+	/**
+	 * Dado uma string que representa o código-fonte de um método (podendo incluir Javadoc),
+	 * indica se este método é abstrato (definido em uma classe abstrata ou em uma interface).
+	 * @param	source	código-fonte do método */
+	private boolean isAbstract(String source)
+	{
+		Pattern pattern = Pattern.compile(".*\\{.*\\}$", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(source);
+		boolean isAbstract = !matcher.matches();
+		
+		return isAbstract;
+	}
+
 	public Map<String, Method> getMethods()
 	{
 		return this.methods;

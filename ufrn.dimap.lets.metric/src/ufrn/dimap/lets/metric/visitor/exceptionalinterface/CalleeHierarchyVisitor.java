@@ -159,7 +159,7 @@ public class CalleeHierarchyVisitor extends CallHierarchyVisitor
 		{
 			CompilationUnit compilationUnit = HandlerUtil.parse(caller);
 
-			MethodVisitor methodVisitor = new MethodVisitor(caller);
+			MethodVisitor methodVisitor = new MethodVisitor(methods);
 			compilationUnit.accept(methodVisitor);
 
 

@@ -1,4 +1,4 @@
-Parsear projetos standalone - https://www.programcreek.com/2011/01/a-complete-standalone-example-of-astparser/
+Para parsear projetos standalone - https://www.programcreek.com/2011/01/a-complete-standalone-example-of-astparser/
 
 TODO
 CANCELADO Verificar qual o código fonte de métodos "native"
@@ -71,7 +71,7 @@ Parsear método
 	Verificar se a interface excepcional mudou
 		Sim
 			Iniciar visitor caller
-				Para método, verificar se a interface mudou
+				Para cada método, verificar se a interface mudou
 					Sim
 						Processar e repetir
 					Não

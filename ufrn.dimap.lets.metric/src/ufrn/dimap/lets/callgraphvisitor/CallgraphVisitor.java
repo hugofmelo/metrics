@@ -53,7 +53,7 @@ public abstract class CallgraphVisitor
 		{
 			discovered.add(identifier);
 			
-			if ( wrapper.getMember().getElementType() == IJavaElement.METHOD )
+			if ( isMethod(wrapper) )
 			{
 				this.processing.push(identifier);
 				this.preVisit((IMethod)wrapper.getMember());
@@ -68,19 +68,21 @@ public abstract class CallgraphVisitor
 					
 			}
 			
-			if ( wrapper.getMember().getElementType() == IJavaElement.METHOD )
+			if ( isMethod(wrapper) )
 			{
 				this.postVisit((IMethod) wrapper.getMember());
 				this.processing.pop();
 			}
-		}
-		
-		
+		}	
 	}
 
 	public abstract void preVisit(IMethod method);
 	
 	public abstract void postVisit(IMethod method);	
+	
+	
+	
+	// Utility methods
 	
 	public List<IMethod> getChildren (IMethod method)
 	{
@@ -102,6 +104,15 @@ public abstract class CallgraphVisitor
 		return children;
 	}
 
+	
+	// Auxiliar methods
+	
+	// Um methodWrapper as vezes é do tipo Type, e não Method. Ocorre com classes anonimas. Esse teste parece uma gambiarra, mas é necessário.
+	private boolean isMethod(MethodWrapper wrapper)
+	{
+		return wrapper.getMember().getElementType() == IJavaElement.METHOD; 
+	}
+	
 	private boolean isRecursive(MethodWrapper wrapper)
 	{
 		return processing.contains(wrapper.getMember().getHandleIdentifier());
