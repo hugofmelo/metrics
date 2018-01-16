@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.PlatformUI;
 
+import ufrn.dimap.lets.callgraphvisitor.CallgraphGenerator;
+import ufrn.dimap.lets.callgraphvisitor.MethodNode;
 import ufrn.dimap.lets.metric.model.CatchEntry;
 import ufrn.dimap.lets.metric.model.FinallyEntry;
 import ufrn.dimap.lets.metric.model.HierarchyModel;
@@ -67,8 +69,11 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 				for ( IMethod method : methods )
 				{
 					//System.out.println( method.getElementName() );
+					bbb (hierarchy, method);
 					
-					this.aaa(method);
+					
+					
+					//this.aaa(method);
 				}
 				
 			}
@@ -85,6 +90,39 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 	
 	
 	
+	private void bbb(CallHierarchy hierarchy, IMethod method)
+	{
+		MethodNode methodRoot = CallgraphGenerator.generatePruned(hierarchy, method);
+		
+		try
+		{
+			methodRoot.computeExceptionalInterface();
+		}
+		catch (JavaModelException e)
+		{
+			e.printStackTrace();
+		}
+		
+		System.out.println("CALL TREE");
+		System.out.println(methodRoot.printGraph());
+		
+		System.out.println("THROWN: ");
+		for ( String thrownType : methodRoot.getThrownTypes() )
+		{
+			System.out.println(thrownType);
+		}
+		
+		System.out.println("RETHROWN: ");
+		for ( String rethrownType : methodRoot.getRethrownTypes() )
+		{
+			System.out.println(rethrownType);
+		}
+		System.out.println();
+	}
+
+
+
+
 	private void aaa ( IMethod method )
 	{
 		visitor.accept(method);

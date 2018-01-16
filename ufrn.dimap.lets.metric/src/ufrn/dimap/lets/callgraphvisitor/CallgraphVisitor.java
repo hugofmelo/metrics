@@ -92,7 +92,7 @@ public abstract class CallgraphVisitor
 		
 		for (MethodWrapper w : wrapper.getCalls(new NullProgressMonitor()))
 		{
-			if ( w.getMember().getElementType() == IJavaElement.METHOD )
+			if ( isMethod (w) )
 			{
 				if (!this.isRecursive(w))
 				{
