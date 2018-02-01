@@ -20,7 +20,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.PlatformUI;
 
-import ufrn.dimap.lets.metric.visitor.exceptionalinterface.InvalidStateException;
+import ufrn.dimap.lets.exceptionalinterface.InvalidStateException;
 
 public class HandlerUtil
 {

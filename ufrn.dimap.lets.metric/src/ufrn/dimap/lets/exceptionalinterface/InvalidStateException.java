@@ -1,4 +1,4 @@
-package ufrn.dimap.lets.metric.visitor.exceptionalinterface;
+package ufrn.dimap.lets.exceptionalinterface;
 
 public class InvalidStateException extends RuntimeException {
 

@@ -1,9 +1,10 @@
-package ufrn.dimap.lets.callgraphvisitor;
+package ufrn.dimap.lets.exceptionalinterface;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,10 +15,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import ufrn.dimap.lets.metric.handlers.HandlerUtil;
-import ufrn.dimap.lets.metric.model.exceptionalinterface.Method;
-import ufrn.dimap.lets.metric.visitor.exceptionalinterface.MethodFinder;
-import ufrn.dimap.lets.metric.visitor.exceptionalinterface.MethodVisitor;
-import ufrn.dimap.lets.metric.visitor.exceptionalinterface.MethodVisitor2;
 
 public class MethodNode
 {
@@ -26,18 +23,24 @@ public class MethodNode
 	private List<MethodNode> children;
 	private boolean recursive;
 	
-	private Set<String> thrownTypes;
-	private Set<String> rethrownTypes;
+	private Set<String> propagated;
+	private Map<String, String> cought;
+	private Set<String> thrown;
+	private Set<String> rethrown;
+	private Map<String, String> wrapped;
 	
 	public MethodNode(IMethod iMethod, MethodNode parent)
 	{
 		this.iMethod = iMethod;
 		this.parent = parent;
 		this.children = new ArrayList<>();
-		recursive = false;
+		this.recursive = false;
 		
-		this.thrownTypes = new HashSet<>();
-		this.rethrownTypes = new HashSet<>();
+		this.propagated = new HashSet<>();
+		this.cought = new HashMap<>();
+		this.thrown = new HashSet<>();
+		this.rethrown = new HashSet<>();
+		this.wrapped = new HashMap<>();
 	}
 
 	public void computeExceptionalInterface() throws JavaModelException
@@ -52,23 +55,23 @@ public class MethodNode
 			CompilationUnit compilationUnit = HandlerUtil.parse(this.iMethod);
 			MethodDeclaration methodDeclaration = MethodFinder.find ( this.iMethod, compilationUnit );
 			
-			MethodVisitor2 methodVisitor = new MethodVisitor2(this);
+			MethodVisitor methodVisitor = new MethodVisitor(this);
 			methodDeclaration.accept(methodVisitor);
 
-			this.thrownTypes.addAll(methodVisitor.thrownTypes);
+			this.thrown.addAll(methodVisitor.thrownTypes);
 
 			// Adicionar a interface excepcional dos métodos chamados no método atual
 			for (MethodNode callee : this.children)
 			{
-				this.rethrownTypes.addAll(callee.getThrownTypes());
-				this.rethrownTypes.addAll(callee.getRethrownTypes());
+				this.rethrown.addAll(callee.getThrown());
+				this.rethrown.addAll(callee.getRethrown());
 			}
 		}
 		else
 		{
 			for ( String exception : getDeclaredException(this.iMethod) )
 			{
-				this.rethrownTypes.add( exception );
+				this.rethrown.add( exception );
 			}
 		}
 	}
@@ -124,6 +127,18 @@ public class MethodNode
 		return exceptions;
 	}
 	
+	public String getIdentifier()
+	{
+		if ( this.iMethod != null )
+		{
+			return this.iMethod.getHandleIdentifier();
+		}
+		else
+		{
+			return "Fake MethodNode";
+		}
+	}
+	
 	public boolean isRecursive ()
 	{
 		return this.recursive;
@@ -134,22 +149,14 @@ public class MethodNode
 		this.recursive = recursive;
 	}
 	
-	public Set<String> getThrownTypes()
+	public Set<String> getThrown()
 	{
-		return this.thrownTypes;
+		return this.thrown;
 	}
 	
-	public Set<String> getRethrownTypes()
+	public Set<String> getRethrown()
 	{
-		return this.rethrownTypes;
-	}
-	
-	public IMethod getIMethod() {
-		return iMethod;
-	}
-
-	public void setIMethod(IMethod iMethod) {
-		this.iMethod = iMethod;
+		return this.rethrown;
 	}
 
 	public MethodNode getParent() {
@@ -170,7 +177,7 @@ public class MethodNode
 
 	public String toString ()
 	{
-		return this.iMethod.getHandleIdentifier();
+		return this.getIdentifier();
 	}
 	
 	public String printGraph ()
@@ -180,27 +187,48 @@ public class MethodNode
 	
 	private String printGraphR (int tabs)
 	{
-		StringBuilder result = new StringBuilder();
-		
-		for ( int i = 0 ; i < tabs ; i++ )
-			result.append("\t"); 
-		
-		result.append (this.iMethod.getHandleIdentifier() + "\n");
-		
-		for ( MethodNode n : this.children )
+		if ( this.iMethod != null )
 		{
-			result.append (n.printGraphR(tabs+1));
+			StringBuilder result = new StringBuilder();
+			
+			for ( int i = 0 ; i < tabs ; i++ )
+				result.append("  "); 
+			
+			result.append (this.iMethod.getDeclaringType().getTypeQualifiedName());
+			result.append(":");
+			result.append(this.iMethod.getElementName());
+			result.append("(");
+			
+			String delimiter = "";
+			for (String parameterType : this.iMethod.getParameterTypes()) {
+				result.append(delimiter);
+				result.append(parameterType);
+				delimiter = ",";
+			}
+			result.append(")");
+			result.append("\n");
+				
+			for ( MethodNode n : this.children )
+			{
+				result.append (n.printGraphR(tabs+1));
+			}
+			
+			return result.toString();
 		}
-		
-		return result.toString();
+		else
+		{
+			return "Fake MethodNode";
+		}
 	}
 
 	public Set<String> getExternalExceptions()
 	{
 		Set<String> exceptions = new HashSet<>();
 		
-		exceptions.addAll(this.thrownTypes);
-		exceptions.addAll(this.rethrownTypes);
+		exceptions.addAll(this.thrown);
+		exceptions.addAll(this.rethrown);
+		exceptions.addAll(this.propagated);
+		exceptions.addAll(this.wrapped.values());
 		
 		return exceptions;
 	}

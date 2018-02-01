@@ -1,14 +1,12 @@
-package ufrn.dimap.lets.metric.visitor.exceptionalinterface;
+package ufrn.dimap.lets.exceptionalinterface;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
-import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -18,22 +16,20 @@ import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
 
-import ufrn.dimap.lets.metric.model.exceptionalinterface.Method;
-
 /**
  * O MethodVisitor deve ser chamado a partir de um MethodDeclaration.*/
 public class MethodVisitor extends ASTVisitor
-{
-	private Map<String, Method> methods;
+{	
+	private MethodNode caller;
 	
 	private Stack<TryStatement> tries;
 	private Stack<CatchClause> catches;
 	
 	public Set<String> thrownTypes;
 	
-	public MethodVisitor (Map<String, Method> methods)
+	public MethodVisitor (MethodNode caller)
 	{
-		this.methods = methods;
+		this.caller = caller;
 		
 		tries = new Stack<>();
 		catches = new Stack<>();
@@ -41,108 +37,95 @@ public class MethodVisitor extends ASTVisitor
 		thrownTypes = new HashSet<>();
 	}
 	
+	@Override
 	public boolean visit ( TryStatement tryStatement )
 	{
 		this.tries.push(tryStatement);
+		sdfdf
 		return true;
 	}
 	
+	@Override
 	public void endVisit ( TryStatement tryStatement )
 	{
 		this.tries.pop();
 	}
 	
+	@Override
 	public boolean visit ( CatchClause catchClause )
 	{
 		this.catches.push(catchClause);
 		return true;	
 	}
 	
+	@Override
 	public void endVisit ( CatchClause catchClause )
 	{
 		this.catches.pop();
 	}
 	
+	@Override
 	public boolean visit ( MethodInvocation methodInvocation )
 	{
-		if ( methods.get(methodInvocation.resolveMethodBinding().getJavaElement().getHandleIdentifier()) == null )
-		{
-			System.err.println("Método não está na lista de processados!!!");
-			System.err.println(methodInvocation.toString());
-			System.err.println();
-		}
-		else
-		{
-			System.out.println(methodInvocation.toString());
-			System.out.println();
-		}
+		IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 		
-		
-		
+		processInvocation (methodBinding);
 		
 		return true;
 	}
 	
+	@Override
 	public boolean visit ( ClassInstanceCreation instanceCreation )
 	{
-		if ( methods.get(instanceCreation.resolveConstructorBinding().getJavaElement().getHandleIdentifier()) == null )
-		{
-			System.err.println("Método não está na lista de processados!!!");
-			System.err.println(instanceCreation.toString());
-			System.err.println();
-		}
-		else
-		{
-			System.out.println(instanceCreation.toString());
-			System.out.println();
-		}
+		IMethodBinding methodBinding = instanceCreation.resolveConstructorBinding();
+		
+		processInvocation (methodBinding);
 		
 		return true;
 	}
 	
+	@Override
 	public boolean visit ( SuperMethodInvocation methodInvocation )
 	{
-		if ( methods.get(methodInvocation.resolveMethodBinding().getJavaElement().getHandleIdentifier()) == null )
-		{
-			System.err.println("Método não está na lista de processados!!!");
-			System.err.println(methodInvocation.toString());
-			System.err.println();
-		}
-		else
-		{
-			System.out.println(methodInvocation.toString());
-			System.out.println();
-		}
+		IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 		
-		
+		processInvocation (methodBinding);
 		
 		return true;
 	}
 	
+	@Override
 	public boolean visit ( SuperConstructorInvocation instanceCreation )
 	{
-		if ( methods.get(instanceCreation.resolveConstructorBinding().getJavaElement().getHandleIdentifier()) == null )
-		{
-			System.err.println("Método não está na lista de processados!!!");
-			System.err.println(instanceCreation.toString());
-			System.err.println();
-		}
-		else
-		{
-			System.out.println(instanceCreation.toString());
-			System.out.println();
-		}
+		IMethodBinding methodBinding = instanceCreation.resolveConstructorBinding();
 		
-		
+		processInvocation (methodBinding);
 		
 		return true;
 	}
 	
-	private void processMethodInvocation ( IMethodBinding methodBinding  )
+	private void processInvocation ( IMethodBinding methodBinding  )
 	{
+		MethodNode callee = findOnChildren(methodBinding);
 		
+		if ( callee != null )
+		{	
+			Set<String> exceptions = callee.getExternalExceptions();
+			
+			if ( !exceptions.isEmpty() )
+			{
+				// Anotar a chamada, como a "!" de swift
+				
+				// verificar se está num try
+				if ( !this.tries.isEmpty() )
+				{
+					
+				}
+			}
+		}
 	}
 	
+	@Override
 	public boolean visit (ThrowStatement throwNode)
 	{	
 		Expression throwExpression = throwNode.getExpression();
@@ -255,5 +238,19 @@ public class MethodVisitor extends ASTVisitor
 		}
 		*/
 		return true;
+	}
+	
+	private MethodNode findOnChildren ( IMethodBinding methodBinding )
+	{		
+		fdgdfsg
+		for ( MethodNode node : this.caller.getChildren() )
+		{
+			if ( methodBinding.getJavaElement().getHandleIdentifier().equals(node.getIdentifier()) )
+			{
+				return node;
+			}
+		}
+		
+		return null;
 	}
 }

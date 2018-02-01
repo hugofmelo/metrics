@@ -1,4 +1,4 @@
-package ufrn.dimap.lets.metric.visitor.exceptionalinterface;
+package ufrn.dimap.lets.exceptionalinterface;
 
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.ASTNode;

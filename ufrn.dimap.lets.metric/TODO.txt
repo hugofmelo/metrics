@@ -5,7 +5,7 @@ CANCELADO Verificar qual o código fonte de métodos "native"
 DONE Implementar callgraph e busca em profundidade
 Prioridade 1: Continuar calculo da interface excepcional (na classe MethodVisitor) - ver código abaixo 
 	Usar o arquivo Example.java para realizar testes e escrever os cenários do algoritmo
-Prioridade 2: Organizar o código do callgraph, refatorando o que for necessário e comentando tudo
+OK Prioridade 2: Organizar o código do callgraph, refatorando o que for necessário e comentando tudo
 
 Prioridade 3: Testar (com testes de verdade) se o call graph que eu uso corresponde ao call graph verdadeiro
 Prioridade 3: Idéia: Criar um grafo, de fato, das chamadas. Ver o desempenho.
