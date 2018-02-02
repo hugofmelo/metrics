@@ -16,8 +16,47 @@ import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
 
+
+/*
+ * Para cada throw ou chamada (MethodInvocation, ClassInstanceCreation, SuperMethodInvocation ou SuperConstructorInvocation),
+ * verifica se há exceções externas.
+ * 		Sim
+ * 			Marca com !
+ * 			Para cada tipo excepcional
+ * 				(1) Está num try?
+ * 					sim
+ * 						verifica se possui um catch para esse tipo
+ * 							sim					
+ * 								verifica se a exceção é re-sinalizada
+ * 									marca como re-sinalizada
+ * 									goto 1
+ * 								verifica se a exceçaõ é encapsulada
+ * 									marca como encapsulada
+ * 									marca o novo tipo
+ * 									goto 1
+ * 								addCaught (last type)
+ *							não
+ *								goto 2
+ * 					não	
+ * 						(2) verifica se primeira expressão era throw ou call
+ * 							throw
+ * 								addThrow (last type)
+ * 							call
+ * 								se rethrow == true
+ * 									addrethrow (last type)
+ * 								se wraps == true
+ * 									addwraps (last type)
+ * 								senão
+ * 									add propagates (last type)					
+ *		Não
+ *			Nada a fazer
+ * */
+
+
+
 /**
- * O MethodVisitor deve ser chamado a partir de um MethodDeclaration.*/
+ * O MethodVisitor deve ser chamado a partir de um MethodDeclaration.
+ * */
 public class MethodVisitor extends ASTVisitor
 {	
 	private MethodNode caller;
@@ -41,7 +80,6 @@ public class MethodVisitor extends ASTVisitor
 	public boolean visit ( TryStatement tryStatement )
 	{
 		this.tries.push(tryStatement);
-		sdfdf
 		return true;
 	}
 	
@@ -106,23 +144,23 @@ public class MethodVisitor extends ASTVisitor
 	
 	private void processInvocation ( IMethodBinding methodBinding  )
 	{
-		MethodNode callee = findOnChildren(methodBinding);
-		
-		if ( callee != null )
-		{	
-			Set<String> exceptions = callee.getExternalExceptions();
-			
-			if ( !exceptions.isEmpty() )
-			{
-				// Anotar a chamada, como a "!" de swift
-				
-				// verificar se está num try
-				if ( !this.tries.isEmpty() )
-				{
-					
-				}
-			}
-		}
+//		MethodNode callee = findOnChildren(methodBinding);
+//		
+//		if ( callee != null )
+//		{	
+//			Set<String> exceptions = callee.getExternalExceptions();
+//			
+//			if ( !exceptions.isEmpty() )
+//			{
+//				// Anotar a chamada, como a "!" de swift
+//				
+//				// verificar se está num try
+//				if ( !this.tries.isEmpty() )
+//				{
+//					
+//				}
+//			}
+//		}
 	}
 	
 	@Override
@@ -130,6 +168,10 @@ public class MethodVisitor extends ASTVisitor
 	{	
 		Expression throwExpression = throwNode.getExpression();
 		
+		ITypeBinding typeBinding = throwExpression.resolveTypeBinding();
+		
+		
+		/*
 		if ( throwExpression instanceof ClassInstanceCreation )
 		{			
 			ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) throwExpression;
@@ -147,7 +189,7 @@ public class MethodVisitor extends ASTVisitor
 			
 			thrownTypes.add(exceptionName);
 		}
-		
+		*/
 		
 		// VERIFICAR QUAL DOS 3 TIPOS DE SIGNALER ESTE SE ENCAIXA
 
@@ -240,9 +282,16 @@ public class MethodVisitor extends ASTVisitor
 		return true;
 	}
 	
+	/**
+	 * Retorna o MethodNode do callgraph que corresponde ao MethodBinding.
+	 * 
+	 * A priori, todo MethodBinding deve ser encontrado. Se ele não existe, é porque este MethodBinding corresponde a uma chamada recursiva (grafo completo) ou já foi visitado anteriormente no callgraph (grafo podado).
+	 * 
+	 * @param methodBinding
+	 * @return 
+	 */
 	private MethodNode findOnChildren ( IMethodBinding methodBinding )
 	{		
-		fdgdfsg
 		for ( MethodNode node : this.caller.getChildren() )
 		{
 			if ( methodBinding.getJavaElement().getHandleIdentifier().equals(node.getIdentifier()) )

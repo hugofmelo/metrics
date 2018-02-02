@@ -58,14 +58,14 @@ public class MethodNode
 			MethodVisitor methodVisitor = new MethodVisitor(this);
 			methodDeclaration.accept(methodVisitor);
 
-			this.thrown.addAll(methodVisitor.thrownTypes);
-
-			// Adicionar a interface excepcional dos métodos chamados no método atual
-			for (MethodNode callee : this.children)
-			{
-				this.rethrown.addAll(callee.getThrown());
-				this.rethrown.addAll(callee.getRethrown());
-			}
+//			this.thrown.addAll(methodVisitor.thrownTypes);
+//
+//			// Adicionar a interface excepcional dos métodos chamados no método atual
+//			for (MethodNode callee : this.children)
+//			{
+//				this.rethrown.addAll(callee.getThrown());
+//				this.rethrown.addAll(callee.getRethrown());
+//			}
 		}
 		else
 		{
