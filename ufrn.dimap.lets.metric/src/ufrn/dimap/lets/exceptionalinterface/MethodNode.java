@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import ufrn.dimap.lets.metric.handlers.HandlerUtil;
@@ -23,11 +24,11 @@ public class MethodNode
 	private List<MethodNode> children;
 	private boolean recursive;
 	
-	private Set<String> propagated;
-	private Map<String, String> cought;
-	private Set<String> thrown;
-	private Set<String> rethrown;
-	private Map<String, String> wrapped;
+	private Set<ITypeBinding> propagated;
+	private Map<ITypeBinding, Set<ITypeBinding>> caught;
+	private Set<ITypeBinding> thrown;
+	private Set<ITypeBinding> rethrown;
+	private Map<ITypeBinding, Set<ITypeBinding>> wrapped;
 	
 	public MethodNode(IMethod iMethod, MethodNode parent)
 	{
@@ -37,7 +38,7 @@ public class MethodNode
 		this.recursive = false;
 		
 		this.propagated = new HashSet<>();
-		this.cought = new HashMap<>();
+		this.caught = new HashMap<>();
 		this.thrown = new HashSet<>();
 		this.rethrown = new HashSet<>();
 		this.wrapped = new HashMap<>();
@@ -71,7 +72,7 @@ public class MethodNode
 		{
 			for ( String exception : getDeclaredException(this.iMethod) )
 			{
-				this.rethrown.add( exception );
+				//this.rethrown.add( exception );
 			}
 		}
 	}
@@ -148,16 +149,6 @@ public class MethodNode
 	{
 		this.recursive = recursive;
 	}
-	
-	public Set<String> getThrown()
-	{
-		return this.thrown;
-	}
-	
-	public Set<String> getRethrown()
-	{
-		return this.rethrown;
-	}
 
 	public MethodNode getParent() {
 		return parent;
@@ -173,6 +164,26 @@ public class MethodNode
 
 	public void setChildren(List<MethodNode> children) {
 		this.children = children;
+	}
+	
+	public Set<ITypeBinding> getPropagated() {
+		return propagated;
+	}
+
+	public Map<ITypeBinding, Set<ITypeBinding>> getCaught() {
+		return caught;
+	}
+
+	public Set<ITypeBinding> getThrown() {
+		return thrown;
+	}
+
+	public Set<ITypeBinding> getRethrown() {
+		return rethrown;
+	}
+
+	public Map<ITypeBinding, Set<ITypeBinding>> getWrapped() {
+		return wrapped;
 	}
 
 	public String toString ()
@@ -221,14 +232,14 @@ public class MethodNode
 		}
 	}
 
-	public Set<String> getExternalExceptions()
+	public Set<ITypeBinding> getExternalExceptions()
 	{
-		Set<String> exceptions = new HashSet<>();
+		Set<ITypeBinding> exceptions = new HashSet<>();
 		
 		exceptions.addAll(this.thrown);
 		exceptions.addAll(this.rethrown);
 		exceptions.addAll(this.propagated);
-		exceptions.addAll(this.wrapped.values());
+		exceptions.addAll(this.wrapped.keySet());
 		
 		return exceptions;
 	}

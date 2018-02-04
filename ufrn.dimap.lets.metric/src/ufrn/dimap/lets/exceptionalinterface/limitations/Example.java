@@ -1,23 +1,75 @@
 package ufrn.dimap.lets.exceptionalinterface.limitations;
 
+import java.io.IOException;
+import java.rmi.activation.ActivationException;
+import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
+
+import javax.transaction.xa.XAException;
+
+import org.omg.CORBA.portable.ApplicationException;
+
 public class Example extends BaseExample {
 
 	public Example() throws Exception
 	{
-		super();
+		// 1
 		signaler();
-		new ThrowingConstructor();
-		super.signaler();
 		
-		Exception e = new RuntimeException();
-		throw e;
+		// 2
+		try
+		{
+			signaler();
+		}
+		catch (IOException e)
+		{
+			throw e;
+		}
+		
+		// 3
+		try
+		{
+			signaler();
+		}
+		catch (Exception e)
+		{
+			throw e;
+		}
+		
+		// 4
+		try
+		{
+			signaler();
+		}
+		catch (IOException e)
+		{
+			throw new SQLException(e);
+		}
+		
+		// 4
+		try
+		{
+			signaler();
+		}
+		catch (Exception e)
+		{
+			throw new SQLException(e);
+		}
+		
+//		super();
+//		signaler();
+//		new ThrowingConstructor();
+//		super.signaler();
+//		
+//		Exception e = new RuntimeException();
+//		throw e;
 		//throw new RuntimeException();
 		
 	}
 
-	protected void signaler()
+	protected void signaler() throws IOException
 	{
-		throw new RuntimeException();
+		throw new IOException();
 	}
 }
 
@@ -28,7 +80,7 @@ class BaseExample
 		throw new IllegalArgumentException();
 	}
 	
-	protected void signaler()
+	protected void signaler() throws IOException
 	{
 		throw new IllegalArgumentException();
 	}

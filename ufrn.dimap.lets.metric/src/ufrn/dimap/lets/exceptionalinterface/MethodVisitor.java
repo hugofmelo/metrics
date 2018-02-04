@@ -59,6 +59,7 @@ import org.eclipse.jdt.core.dom.TryStatement;
  * */
 public class MethodVisitor extends ASTVisitor
 {	
+	private ExceptionEvaluator evaluator;
 	private MethodNode caller;
 	
 	private Stack<TryStatement> tries;
@@ -144,23 +145,28 @@ public class MethodVisitor extends ASTVisitor
 	
 	private void processInvocation ( IMethodBinding methodBinding  )
 	{
-//		MethodNode callee = findOnChildren(methodBinding);
-//		
-//		if ( callee != null )
-//		{	
-//			Set<String> exceptions = callee.getExternalExceptions();
-//			
-//			if ( !exceptions.isEmpty() )
-//			{
-//				// Anotar a chamada, como a "!" de swift
-//				
-//				// verificar se está num try
-//				if ( !this.tries.isEmpty() )
-//				{
-//					
-//				}
-//			}
-//		}
+		MethodNode callee = findOnChildren(methodBinding);
+		
+		if ( callee != null )
+		{	
+			Set<ITypeBinding> exceptions = callee.getExternalExceptions();
+			
+			if ( !exceptions.isEmpty() )
+			{
+				// Anotar a chamada, como a "!" de swift
+				
+				TryStatement tryStatement = null;
+				if ( !this.tries.isEmpty() )
+				{
+					tryStatement = this.tries.peek();
+				}
+				
+				for ( ITypeBinding exception : exceptions )
+				{
+					evaluator = new ExceptionEvaluator(this.caller, exception, tryStatement, true);
+				}
+			}
+		}
 	}
 	
 	@Override
