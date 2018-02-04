@@ -16,45 +16,54 @@ public class Example extends BaseExample {
 		// 1
 		signaler();
 		
-		// 2
-		try
-		{
-			signaler();
-		}
-		catch (IOException e)
-		{
-			throw e;
-		}
-		
-		// 3
-		try
-		{
-			signaler();
-		}
-		catch (Exception e)
-		{
-			throw e;
-		}
-		
-		// 4
-		try
-		{
-			signaler();
-		}
-		catch (IOException e)
-		{
-			throw new SQLException(e);
-		}
-		
-		// 4
-		try
-		{
-			signaler();
-		}
-		catch (Exception e)
-		{
-			throw new SQLException(e);
-		}
+//		// 2
+//		try
+//		{
+//			signaler();
+//		}
+//		catch (IOException e)
+//		{
+//			throw e;
+//		}
+//		
+//		// 3
+//		try
+//		{
+//			signaler();
+//		}
+//		catch (Exception e)
+//		{
+//			throw e;
+//		}
+//		
+//		// 4
+//		try
+//		{
+//			signaler();
+//		}
+//		catch (IOException e)
+//		{
+//			throw new SQLException(e);
+//		}
+//		
+//		// 5
+//		try
+//		{
+//			signaler();
+//		}
+//		catch (Exception e)
+//		{
+//			try
+//			{
+//				throw new SQLException(e);
+//			}
+//			catch (Exception e2)
+//			{
+//				throw (Exception)e.getCause();
+//			}
+//			
+//			//throw e;
+//		}
 		
 //		super();
 //		signaler();

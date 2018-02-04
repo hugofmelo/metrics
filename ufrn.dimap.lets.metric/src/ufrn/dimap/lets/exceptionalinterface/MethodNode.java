@@ -9,11 +9,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.internal.core.JavaModel;
 
 import ufrn.dimap.lets.metric.handlers.HandlerUtil;
 
@@ -24,8 +28,8 @@ public class MethodNode
 	private List<MethodNode> children;
 	private boolean recursive;
 	
-	private Set<ITypeBinding> propagated;
 	private Map<ITypeBinding, Set<ITypeBinding>> caught;
+	private Set<ITypeBinding> propagated;
 	private Set<ITypeBinding> thrown;
 	private Set<ITypeBinding> rethrown;
 	private Map<ITypeBinding, Set<ITypeBinding>> wrapped;
@@ -56,27 +60,51 @@ public class MethodNode
 			CompilationUnit compilationUnit = HandlerUtil.parse(this.iMethod);
 			MethodDeclaration methodDeclaration = MethodFinder.find ( this.iMethod, compilationUnit );
 			
-			MethodVisitor methodVisitor = new MethodVisitor(this);
-			methodDeclaration.accept(methodVisitor);
-
-//			this.thrown.addAll(methodVisitor.thrownTypes);
-//
-//			// Adicionar a interface excepcional dos métodos chamados no método atual
-//			for (MethodNode callee : this.children)
-//			{
-//				this.rethrown.addAll(callee.getThrown());
-//				this.rethrown.addAll(callee.getRethrown());
-//			}
+			if (!MethodValidator.hasNestedTryStatement(methodDeclaration))
+			{
+				MethodVisitor methodVisitor = new MethodVisitor(this);
+				methodDeclaration.accept(methodVisitor);
+				
+//				this.thrown.addAll(methodVisitor.thrownTypes);
+//				
+//				// Adicionar a interface excepcional dos métodos chamados no método atual
+//				for (MethodNode callee : this.children)
+//				{
+//					this.rethrown.addAll(callee.getThrown());
+//					this.rethrown.addAll(callee.getRethrown());
+//				}
+			}
+			else
+			{
+				addDeclaredExceptions();
+			}
 		}
 		else
 		{
-			for ( String exception : getDeclaredException(this.iMethod) )
-			{
-				//this.rethrown.add( exception );
-			}
+			addDeclaredExceptions();
 		}
 	}
 	
+	/**
+	 * As exceções declaradas pelo metodo na cláusula "throws". Para cada tipo, ele é procurado no JavaModel. Senão existir, ele simplesmente é ignorado.
+	 * @throws JavaModelException
+	 */
+	private void addDeclaredExceptions() throws JavaModelException
+	{
+		// TODO
+		for ( String exception : this.iMethod.getExceptionTypes() )
+		{
+			String qualifiedName = exception.substring(1, exception.length() - 1);
+			
+			IType type = this.iMethod.getJavaProject().findType(qualifiedName);
+			
+			if (type != null)
+			{
+				//this.propagated.add(type);
+			}
+		}
+	}
+
 	/**
 	 * O IMethod é parseable se não é nativo e possui código-fonte (é um CompilationUnit ou um ClassFile com código-fonte linkado).
 	 * @param	method	O método a ser testado.
@@ -113,19 +141,6 @@ public class MethodNode
 		boolean isAbstract = !matcher.matches();
 		
 		return isAbstract;
-	}
-	
-	// O IMethod possui um array de strings que representam as exceções da interface excepcional declarada. As strings estão num formato diferente. Este método convete o array com nomes estranhos em uma lista de tamanhos normais.
-	private List<String> getDeclaredException(IMethod method) throws JavaModelException
-	{
-		List<String> exceptions = new ArrayList<>();
-
-		for ( String exception : method.getExceptionTypes() )
-		{
-			exceptions.add(exception.substring(1, exception.length() - 1));
-		}
-
-		return exceptions;
 	}
 	
 	public String getIdentifier()
@@ -166,12 +181,12 @@ public class MethodNode
 		this.children = children;
 	}
 	
-	public Set<ITypeBinding> getPropagated() {
-		return propagated;
-	}
-
 	public Map<ITypeBinding, Set<ITypeBinding>> getCaught() {
 		return caught;
+	}
+
+	public Set<ITypeBinding> getPropagated() {
+		return propagated;
 	}
 
 	public Set<ITypeBinding> getThrown() {
@@ -188,24 +203,11 @@ public class MethodNode
 
 	public String toString ()
 	{
-		return this.getIdentifier();
-	}
-	
-	public String printGraph ()
-	{
-		return this.printGraphR(0);
-	}
-	
-	private String printGraphR (int tabs)
-	{
 		if ( this.iMethod != null )
 		{
 			StringBuilder result = new StringBuilder();
 			
-			for ( int i = 0 ; i < tabs ; i++ )
-				result.append("  "); 
-			
-			result.append (this.iMethod.getDeclaringType().getTypeQualifiedName());
+			result.append (this.iMethod.getDeclaringType().getFullyQualifiedName());
 			result.append(":");
 			result.append(this.iMethod.getElementName());
 			result.append("(");
@@ -217,12 +219,6 @@ public class MethodNode
 				delimiter = ",";
 			}
 			result.append(")");
-			result.append("\n");
-				
-			for ( MethodNode n : this.children )
-			{
-				result.append (n.printGraphR(tabs+1));
-			}
 			
 			return result.toString();
 		}
@@ -230,6 +226,29 @@ public class MethodNode
 		{
 			return "Fake MethodNode";
 		}
+	}
+	
+	public String printGraph ()
+	{
+		return this.printGraphR(0);
+	}
+	
+	private String printGraphR (int tabs)
+	{
+		StringBuilder result = new StringBuilder();
+		
+		for ( int i = 0 ; i < tabs ; i++ )
+			result.append("  "); 
+		
+		result.append (this.toString());
+		result.append("\n");
+			
+		for ( MethodNode n : this.children )
+		{
+			result.append (n.printGraphR(tabs+1));
+		}
+		
+		return result.toString();
 	}
 
 	public Set<ITypeBinding> getExternalExceptions()
@@ -244,7 +263,44 @@ public class MethodNode
 		return exceptions;
 	}
 
+	public void addCaught(ITypeBinding realCaughtType, ITypeBinding catchType)
+	{
+		Set<ITypeBinding> caughtAs = this.caught.get(realCaughtType);
+		if ( caughtAs == null )
+		{
+			caughtAs = new HashSet<>();
+		}
+		
+		caughtAs.add(catchType);
+		
+		this.caught.put(realCaughtType, caughtAs);
+	}
 
+	public void addPropagated(ITypeBinding type)
+	{
+		this.propagated.add(type);
+	}
 
-	
+	public void addThrown(ITypeBinding type)
+	{
+		this.thrown.add(type);
+	}
+
+	public void addRethrown(ITypeBinding type)
+	{
+		this.rethrown.add(type);
+	}
+
+	public void addWrapped(ITypeBinding wrapperType, ITypeBinding wrappedType)
+	{
+		Set<ITypeBinding> wrappedAs = this.caught.get(wrapperType);
+		if ( wrappedAs == null )
+		{
+			wrappedAs = new HashSet<>();
+		}
+		
+		wrappedAs.add(wrappedType);
+		
+		this.caught.put(wrapperType, wrappedAs);
+	}
 }

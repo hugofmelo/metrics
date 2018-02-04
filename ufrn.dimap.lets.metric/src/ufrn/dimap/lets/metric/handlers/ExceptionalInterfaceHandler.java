@@ -7,6 +7,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionService;
@@ -32,6 +33,7 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 				for ( IMethod method : methods )
 				{
 					bbb (method);
+					return null;
 				}
 
 			}
@@ -58,19 +60,46 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 			e.printStackTrace();
 		}
 
-		System.out.println("CALL TREE");
-		System.out.println(methodRoot.printGraph());
+		//System.out.println("CALL TREE");
+		//System.out.println(methodRoot.printGraph());
 
-		System.out.println("THROWN: ");
-		for ( String thrownType : methodRoot.getThrown() )
+		System.out.println("METHOD");
+		System.out.println(methodRoot.toString());
+		
+		System.out.println("CALLEES: ");
+		for ( MethodNode callee : methodRoot.getChildren())
 		{
-			System.out.println(thrownType);
+			System.out.println(callee.toString());
+		}
+		
+		System.out.println("CAUGHT: ");
+		for ( ITypeBinding type : methodRoot.getCaught().keySet())
+		{
+			System.out.println(type.getQualifiedName());
 		}
 
-		System.out.println("RETHROWN: ");
-		for ( String rethrownType : methodRoot.getRethrown() )
+		System.out.println("PROPAGATED: ");
+		for ( ITypeBinding type : methodRoot.getPropagated() )
 		{
-			System.out.println(rethrownType);
+			System.out.println(type.getQualifiedName());
+		}
+		
+		System.out.println("THROWN: ");
+		for ( ITypeBinding type : methodRoot.getThrown() )
+		{
+			System.out.println(type.getQualifiedName());
+		}
+		
+		System.out.println("RETHROWN: ");
+		for ( ITypeBinding type : methodRoot.getRethrown() )
+		{
+			System.out.println(type.getQualifiedName());
+		}
+		
+		System.out.println("WRAPPED: ");
+		for ( ITypeBinding type : methodRoot.getWrapped().keySet() )
+		{
+			System.out.println(type.getQualifiedName());
 		}
 		System.out.println();
 	}
