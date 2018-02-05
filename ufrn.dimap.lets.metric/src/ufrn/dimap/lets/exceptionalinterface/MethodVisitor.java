@@ -1,6 +1,7 @@
 package ufrn.dimap.lets.exceptionalinterface;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -11,14 +12,14 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
 
 
-/*
- * Para cada throw ou chamada (MethodInvocation, ClassInstanceCreation, SuperMethodInvocation ou SuperConstructorInvocation),
+/* Para cada throw ou chamada (MethodInvocation, ClassInstanceCreation, SuperMethodInvocation ou SuperConstructorInvocation),
  * verifica se há exceções externas.
  * 		Sim
  * 			Marca com !
@@ -58,33 +59,32 @@ import org.eclipse.jdt.core.dom.TryStatement;
 public class MethodVisitor extends ASTVisitor
 {	
 	private MethodNode caller;
-	private Block tryBlock;
+	private TryStatement tryStatement;
 	private CatchClause catchClause;
 	
 	public MethodVisitor (MethodNode caller)
 	{
 		this.caller = caller;
-		this.tryBlock = null;
+		this.tryStatement = null;
 		this.catchClause = null;
 	}
 	
 	@Override
 	public boolean visit ( TryStatement tryStatement )
 	{
-		this.tryBlock = tryStatement.getBody();
+		this.tryStatement = tryStatement;
 		return true;
-	}
-
-	@Override
-	public void endVisit ( TryStatement tryStatement )
-	{
-		this.tryBlock = null;
 	}
 	
 	@Override
+	public void endVisit ( TryStatement tryStatement )
+	{
+		this.tryStatement = null;
+	}
+
+	@Override
 	public boolean visit ( CatchClause catchClause )
 	{
-		this.tryBlock = null;
 		this.catchClause = catchClause;
 		return true;
 	}
@@ -93,7 +93,7 @@ public class MethodVisitor extends ASTVisitor
 	public void endVisit ( CatchClause catchClause )
 	{
 		this.catchClause = null;
-	}
+	}	
 	
 	@Override
 	public boolean visit ( MethodInvocation methodInvocation )
@@ -141,7 +141,10 @@ public class MethodVisitor extends ASTVisitor
 		Expression throwExpression = throwNode.getExpression();
 		ITypeBinding exceptionType = throwExpression.resolveTypeBinding();
 		
-		ExceptionEvaluator.evaluate(tryStatement, exceptionType, false, this.caller);
+		if (!onCatchBlock())
+		{
+			evaluate(exceptionType, false);
+		}
 	
 		return true;
 	}
@@ -160,8 +163,75 @@ public class MethodVisitor extends ASTVisitor
 				
 				for ( ITypeBinding exception : exceptions )
 				{
-					ExceptionEvaluator.evaluate(tryStatement, exception, true, caller);
+					evaluate(exception, true);
 				}
+			}
+		}
+	}
+	
+	public void evaluate(ITypeBinding signaledExceptionType, boolean signalerIsCall)
+	{
+		if ( onTryBody() )
+		{
+			boolean caught = false;
+			
+			@SuppressWarnings("unchecked")
+			List<CatchClause> catches = tryStatement.catchClauses();
+			for ( CatchClause catchClause : catches )
+			{
+				ITypeBinding caughtExceptionType = catchClause.getException().getType().resolveBinding();
+				SimpleName caughtExceptionName = catchClause.getException().getName();
+				if (isSubtype (signaledExceptionType, caughtExceptionType))
+				{
+					caught = true;
+					
+					ThrowVisitor throwVisitor = new ThrowVisitor (caughtExceptionName);
+					catchClause.accept(throwVisitor);
+					
+					if ( throwVisitor.isWrapped() )
+					{
+						caller.addWrapped(throwVisitor.getWrapperExceptionType(), signaledExceptionType);
+					}
+					else if ( throwVisitor.isRethrown() )
+					{
+						caller.addRethrown(signaledExceptionType);
+					}
+					else
+					{
+						if ( signalerIsCall )
+						{
+							caller.addCaught (signaledExceptionType, caughtExceptionType);
+						}
+						else // throw
+						{
+							// A exceção foi lançada e capturada intra método. Não afeta a interface excepcional.
+						}
+					}
+				}
+			}
+			
+			if ( !caught )
+			{
+				if ( signalerIsCall )
+				{
+					caller.addPropagated(signaledExceptionType);
+				}
+				else
+				{
+					caller.addThrown(signaledExceptionType);
+				}
+			}
+		}
+		else
+		// Sinalização não ocorre no escopo de um try. Ou é um novo fluxo, ou é propagada
+		{
+			if ( signalerIsCall )
+			{
+				caller.addPropagated(signaledExceptionType);
+			}
+			else
+			{
+				caller.addThrown(signaledExceptionType);
 			}
 		}
 	}
@@ -185,5 +255,40 @@ public class MethodVisitor extends ASTVisitor
 		}
 		
 		return null;
+	}
+
+	private boolean onTryBody()
+	{
+		return this.tryStatement != null && this.catchClause == null;
+	}
+
+	private boolean onCatchBlock()
+	{
+		return this.catchClause != null;
+	}
+
+	/**
+	 * Verifica se subType é do mesmo tipo ou subtipo de superType.
+	 * @param subType
+	 * @param superType
+	 * @return
+	 */
+	private static boolean isSubtype(ITypeBinding subType, ITypeBinding superType)
+	{
+		ITypeBinding type = subType;
+		
+		while ( type != null )
+		{
+			if ( type.getQualifiedName().equals(superType.getQualifiedName()) )
+			{
+				return true;
+			}
+			else
+			{
+				type = type.getSuperclass();
+			}
+		}
+		
+		return false;
 	}
 }
