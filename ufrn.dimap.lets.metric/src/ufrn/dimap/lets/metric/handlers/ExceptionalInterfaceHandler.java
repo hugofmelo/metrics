@@ -7,15 +7,14 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.PlatformUI;
 
 import ufrn.dimap.lets.exceptionalinterface.CallgraphGenerator;
+import ufrn.dimap.lets.exceptionalinterface.EIType;
 import ufrn.dimap.lets.exceptionalinterface.MethodNode;
-import ufrn.dimap.lets.metric.model.HierarchyModel;
 
 public class ExceptionalInterfaceHandler extends AbstractHandler
 {	
@@ -73,31 +72,31 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 		}
 		
 		System.out.println("CAUGHT: ");
-		for ( ITypeBinding type : methodRoot.getCaught().keySet())
+		for ( EIType type : methodRoot.getExceptionalInterface().getCaught().keySet())
 		{
 			System.out.println(type.getQualifiedName());
 		}
 
 		System.out.println("PROPAGATED: ");
-		for ( ITypeBinding type : methodRoot.getPropagated() )
+		for ( EIType type : methodRoot.getExceptionalInterface().getPropagated() )
 		{
 			System.out.println(type.getQualifiedName());
 		}
 		
 		System.out.println("THROWN: ");
-		for ( ITypeBinding type : methodRoot.getThrown() )
+		for ( EIType type : methodRoot.getExceptionalInterface().getThrown() )
 		{
 			System.out.println(type.getQualifiedName());
 		}
 		
 		System.out.println("RETHROWN: ");
-		for ( ITypeBinding type : methodRoot.getRethrown() )
+		for ( EIType type : methodRoot.getExceptionalInterface().getRethrown() )
 		{
 			System.out.println(type.getQualifiedName());
 		}
 		
 		System.out.println("WRAPPED: ");
-		for ( ITypeBinding type : methodRoot.getWrapped().keySet() )
+		for ( EIType type : methodRoot.getExceptionalInterface().getWrapped().keySet() )
 		{
 			System.out.println(type.getQualifiedName());
 		}

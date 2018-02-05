@@ -1,23 +1,15 @@
 package ufrn.dimap.lets.exceptionalinterface;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.internal.core.JavaModel;
 
 import ufrn.dimap.lets.metric.handlers.HandlerUtil;
 
@@ -26,26 +18,16 @@ public class MethodNode
 	private IMethod iMethod;
 	private MethodNode parent;
 	private List<MethodNode> children;
+	private ExceptionalInterface exceptionalInterface;
 	private boolean recursive;
-	
-	private Map<ITypeBinding, Set<ITypeBinding>> caught;
-	private Set<ITypeBinding> propagated;
-	private Set<ITypeBinding> thrown;
-	private Set<ITypeBinding> rethrown;
-	private Map<ITypeBinding, Set<ITypeBinding>> wrapped;
 	
 	public MethodNode(IMethod iMethod, MethodNode parent)
 	{
 		this.iMethod = iMethod;
 		this.parent = parent;
 		this.children = new ArrayList<>();
+		this.exceptionalInterface = new ExceptionalInterface();
 		this.recursive = false;
-		
-		this.propagated = new HashSet<>();
-		this.caught = new HashMap<>();
-		this.thrown = new HashSet<>();
-		this.rethrown = new HashSet<>();
-		this.wrapped = new HashMap<>();
 	}
 
 	public void computeExceptionalInterface() throws JavaModelException
@@ -181,24 +163,8 @@ public class MethodNode
 		this.children = children;
 	}
 	
-	public Map<ITypeBinding, Set<ITypeBinding>> getCaught() {
-		return caught;
-	}
-
-	public Set<ITypeBinding> getPropagated() {
-		return propagated;
-	}
-
-	public Set<ITypeBinding> getThrown() {
-		return thrown;
-	}
-
-	public Set<ITypeBinding> getRethrown() {
-		return rethrown;
-	}
-
-	public Map<ITypeBinding, Set<ITypeBinding>> getWrapped() {
-		return wrapped;
+	public ExceptionalInterface getExceptionalInterface() {
+		return exceptionalInterface;
 	}
 
 	public String toString ()
@@ -251,56 +217,6 @@ public class MethodNode
 		return result.toString();
 	}
 
-	public Set<ITypeBinding> getExternalExceptions()
-	{
-		Set<ITypeBinding> exceptions = new HashSet<>();
-		
-		exceptions.addAll(this.thrown);
-		exceptions.addAll(this.rethrown);
-		exceptions.addAll(this.propagated);
-		exceptions.addAll(this.wrapped.keySet());
-		
-		return exceptions;
-	}
-
-	public void addCaught(ITypeBinding realCaughtType, ITypeBinding catchType)
-	{
-		Set<ITypeBinding> caughtAs = this.caught.get(realCaughtType);
-		if ( caughtAs == null )
-		{
-			caughtAs = new HashSet<>();
-		}
-		
-		caughtAs.add(catchType);
-		
-		this.caught.put(realCaughtType, caughtAs);
-	}
-
-	public void addPropagated(ITypeBinding type)
-	{
-		this.propagated.add(type);
-	}
-
-	public void addThrown(ITypeBinding type)
-	{
-		this.thrown.add(type);
-	}
-
-	public void addRethrown(ITypeBinding type)
-	{
-		this.rethrown.add(type);
-	}
-
-	public void addWrapped(ITypeBinding wrapperType, ITypeBinding wrappedType)
-	{
-		Set<ITypeBinding> wrappedAs = this.caught.get(wrapperType);
-		if ( wrappedAs == null )
-		{
-			wrappedAs = new HashSet<>();
-		}
-		
-		wrappedAs.add(wrappedType);
-		
-		this.caught.put(wrapperType, wrappedAs);
-	}
+	
+	
 }

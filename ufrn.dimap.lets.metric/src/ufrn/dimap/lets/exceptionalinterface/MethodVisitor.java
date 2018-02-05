@@ -1,11 +1,9 @@
 package ufrn.dimap.lets.exceptionalinterface;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
@@ -143,7 +141,7 @@ public class MethodVisitor extends ASTVisitor
 		
 		if (!onCatchBlock())
 		{
-			evaluate(exceptionType, false);
+			evaluate(new EIType(exceptionType), false);
 		}
 	
 		return true;
@@ -155,13 +153,13 @@ public class MethodVisitor extends ASTVisitor
 		
 		if ( callee != null )
 		{	
-			Set<ITypeBinding> exceptions = callee.getExternalExceptions();
+			Set<EIType> exceptions = callee.getExceptionalInterface().getExternalExceptions();
 			
 			if ( !exceptions.isEmpty() )
 			{
 				// TODO Anotar a chamada, como a "!" de swift
 				
-				for ( ITypeBinding exception : exceptions )
+				for ( EIType exception : exceptions )
 				{
 					evaluate(exception, true);
 				}
@@ -169,7 +167,7 @@ public class MethodVisitor extends ASTVisitor
 		}
 	}
 	
-	public void evaluate(ITypeBinding signaledExceptionType, boolean signalerIsCall)
+	public void evaluate(EIType signaledExceptionType, boolean signalerIsCall)
 	{
 		if ( onTryBody() )
 		{
@@ -181,7 +179,7 @@ public class MethodVisitor extends ASTVisitor
 			{
 				ITypeBinding caughtExceptionType = catchClause.getException().getType().resolveBinding();
 				SimpleName caughtExceptionName = catchClause.getException().getName();
-				if (isSubtype (signaledExceptionType, caughtExceptionType))
+				if (EIType.isSubtype (signaledExceptionType, caughtExceptionType))
 				{
 					caught = true;
 					
@@ -190,17 +188,17 @@ public class MethodVisitor extends ASTVisitor
 					
 					if ( throwVisitor.isWrapped() )
 					{
-						caller.addWrapped(throwVisitor.getWrapperExceptionType(), signaledExceptionType);
+						caller.getExceptionalInterface().addWrapped(new EIType(throwVisitor.getWrapperExceptionType()), signaledExceptionType);
 					}
 					else if ( throwVisitor.isRethrown() )
 					{
-						caller.addRethrown(signaledExceptionType);
+						caller.getExceptionalInterface().addRethrown(signaledExceptionType);
 					}
 					else
 					{
 						if ( signalerIsCall )
 						{
-							caller.addCaught (signaledExceptionType, caughtExceptionType);
+							caller.getExceptionalInterface().addCaught (signaledExceptionType, new EIType (caughtExceptionType));
 						}
 						else // throw
 						{
@@ -214,11 +212,11 @@ public class MethodVisitor extends ASTVisitor
 			{
 				if ( signalerIsCall )
 				{
-					caller.addPropagated(signaledExceptionType);
+					caller.getExceptionalInterface().addPropagated(signaledExceptionType);
 				}
 				else
 				{
-					caller.addThrown(signaledExceptionType);
+					caller.getExceptionalInterface().addThrown(signaledExceptionType);
 				}
 			}
 		}
@@ -227,11 +225,11 @@ public class MethodVisitor extends ASTVisitor
 		{
 			if ( signalerIsCall )
 			{
-				caller.addPropagated(signaledExceptionType);
+				caller.getExceptionalInterface().addPropagated(signaledExceptionType);
 			}
 			else
 			{
-				caller.addThrown(signaledExceptionType);
+				caller.getExceptionalInterface().addThrown(signaledExceptionType);
 			}
 		}
 	}
@@ -267,28 +265,5 @@ public class MethodVisitor extends ASTVisitor
 		return this.catchClause != null;
 	}
 
-	/**
-	 * Verifica se subType é do mesmo tipo ou subtipo de superType.
-	 * @param subType
-	 * @param superType
-	 * @return
-	 */
-	private static boolean isSubtype(ITypeBinding subType, ITypeBinding superType)
-	{
-		ITypeBinding type = subType;
-		
-		while ( type != null )
-		{
-			if ( type.getQualifiedName().equals(superType.getQualifiedName()) )
-			{
-				return true;
-			}
-			else
-			{
-				type = type.getSuperclass();
-			}
-		}
-		
-		return false;
-	}
+	
 }
