@@ -1,24 +1,25 @@
 Para parsear projetos standalone - https://www.programcreek.com/2011/01/a-complete-standalone-example-of-astparser/
 
 TODO
-OK Prioridade 1: refatorar MethodNode: criar classe ExceptionalInterface, com relaÁ„o 1:1 com MethodNode.
+Prioridade 2: Testar calculo das interface excepcional com finally. try-finally(throw) e try-finally(return)
+OK Prioridade 1: refatorar MethodNode: criar classe ExceptionalInterface, com rela√ß√£o 1:1 com MethodNode.
 OK Prioridade 1: ExceptionalInterface deve ter uma lista de EIType, que por sua vez possui um ITypeBinding ou um IType. Implementas equals do EIType.
-Prioridade 1: Refatorar ExceptionalInterface para armazenar origem do fluxo. Pode ser armazenado no IMethod + linha de cÛdigo. Reimplementar equals e hashCode. Trocar EIType por EISignaler, que tem o tipo e origem.
-Prioridade 2: Diferenciar cada sinalizaÁ„o: trocar Set por List em ExceptionalInterface.
+Prioridade 1: Refatorar ExceptionalInterface para armazenar origem do fluxo. Pode ser armazenado no IMethod + linha de c√≥digo. Reimplementar equals e hashCode. Trocar EIType por EISignaler, que tem o tipo e origem.
+Prioridade 2: Diferenciar cada sinaliza√ß√£o: trocar Set por List em ExceptionalInterface.
 
 
-OBSERVA«’ES
-Para parsear o mÈtodo, È preciso que o cÛdigo-fonte dele esteja disponÌvel.
-	AplicaÁ„o: o cÛdigo da prÛpria aplicaÁ„o È obviamente garantido.
-	Java: CÛdigo java È parcialmente garantido, porque alguns pacotes s„o propriet·rios e n„o h· fonte para eles.
-	Dependencias: … comum que o cÛdigo fonte de dependencias gradle sejam baixados e linkados automaticamente. N„o sei do Maven e outros.
-	A recomendaÁ„o È: usu·rio, faÁa de tudo para ter o cÛdigo fonte de todas as dependencias. Se o cÛdigo n„o existir, a an·lise levar· em consideraÁ„o somente a interface excepcional declarada, o que È pÈssimo. Como se sabe, todo esse trabalho È motivado pelo fato das interfaces excepcionais declaradas serem incompletas e imprecisas.
-		  O que se pode fazer nesse caso È adicionar uma an·lise din‚mica. Especialmente para os mÈtodos sem fonte, qualquer ocorrÍncia de exceÁ„o È verificada e adicionada ‡ base de dados.
-MÈtodos native s„o um problema. N„o existe cÛdigo para eles!
-	Confiar somente na declaraÁ„o
-		Adicionar no DB se encontrar exceÁ„o em runtime.
-MÈtodos que n„o puderam ser parseados (ver itens acima) levam a interface excepcional declarada consigo e um tipo especial de exceÁ„o (ou marcaÁ„o) que indica que ele n„o foi parseado.  			
-LimitaÁıes
+OBSERVA√á√ïES
+Para parsear o m√©todo, √© preciso que o c√≥digo-fonte dele esteja dispon√≠vel.
+	Aplica√ß√£o: o c√≥digo da pr√≥pria aplica√ß√£o √© obviamente garantido.
+	Java: C√≥digo java √© parcialmente garantido, porque alguns pacotes s√£o propriet√°rios e n√£o h√° fonte para eles.
+	Dependencias: √â comum que o c√≥digo fonte de dependencias gradle sejam baixados e linkados automaticamente. N√£o sei do Maven e outros.
+	A recomenda√ß√£o √©: usu√°rio, fa√ßa de tudo para ter o c√≥digo fonte de todas as dependencias. Se o c√≥digo n√£o existir, a an√°lise levar√° em considera√ß√£o somente a interface excepcional declarada, o que √© p√©ssimo. Como se sabe, todo esse trabalho √© motivado pelo fato das interfaces excepcionais declaradas serem incompletas e imprecisas.
+		  O que se pode fazer nesse caso √© adicionar uma an√°lise din√¢mica. Especialmente para os m√©todos sem fonte, qualquer ocorr√™ncia de exce√ß√£o √© verificada e adicionada √† base de dados.
+M√©todos native s√£o um problema. N√£o existe c√≥digo para eles!
+	Confiar somente na declara√ß√£o
+		Adicionar no DB se encontrar exce√ß√£o em runtime.
+M√©todos que n√£o puderam ser parseados (ver itens acima) levam a interface excepcional declarada consigo e um tipo especial de exce√ß√£o (ou marca√ß√£o) que indica que ele n√£o foi parseado.  			
+Limita√ß√µes
 	Ver classe IndirectRecursion
 	Ver classe AnonymousClasses
 	Ver classe InterfaceResolution
@@ -26,51 +27,51 @@ LimitaÁıes
 
 ALGORITMO - Abrir classe no editor
 Inicia o visitor callee
-	Para cada mÈtodo
+	Para cada m√©todo
 		visit
-			Verificar se j· foi visitado
+			Verificar se j√° foi visitado
 				Sim
-					return false (ainda assim ser· chamado postVisitor para este mÈtodo. Os seus filhos È que n„o v„o ser visitados)
-				N„o
+					return false (ainda assim ser√° chamado postVisitor para este m√©todo. Os seus filhos √© que n√£o v√£o ser visitados)
+				N√£o
 					return true
 		Post visit
-			parsear o cÛdigo
-				Para cada chamada de mÈtodo
-					Verificar a interface excepcional daquele mÈtodo
-						H· exceÁıes?
+			parsear o c√≥digo
+				Para cada chamada de m√©todo
+					Verificar a interface excepcional daquele m√©todo
+						H√° exce√ß√µes?
 							Sim
-								A chamada est· em um try?
+								A chamada est√° em um try?
 									Sim
 										Marcar a chamada com @throws
 										
-										Verificar se as exceÁıes s„o capturadas
+										Verificar se as exce√ß√µes s√£o capturadas
 											Sim
-												Verificar se a exceÁ„o È encapsulada e relanÁada
+												Verificar se a exce√ß√£o √© encapsulada e relan√ßada
 													Sim
-														Adicionar a exceÁ„o no "remaps" do mÈtodo
-													N„o
-														Adicionar a exceÁ„o no "catches" do mÈtodo
-											N„o
-												Adicionar as exceÁıes no "rethrows" do mÈtodo
-									N„o
-										Adicionar as exceÁıes no "rethrows" do mÈtodo
-							N„o
+														Adicionar a exce√ß√£o no "remaps" do m√©todo
+													N√£o
+														Adicionar a exce√ß√£o no "catches" do m√©todo
+											N√£o
+												Adicionar as exce√ß√µes no "rethrows" do m√©todo
+									N√£o
+										Adicionar as exce√ß√µes no "rethrows" do m√©todo
+							N√£o
 								Nada a fazer
-				Para cada throw que n„o est· em um catch e nem em um try
-					Adicionar a exceÁ„o no "throws" do mÈtodo
+				Para cada throw que n√£o est√° em um catch e nem em um try
+					Adicionar a exce√ß√£o no "throws" do m√©todo
 			Marcar como visitado
 				
 
 ALGORITMO - Salvar arquivo
-Parsear mÈtodo
+Parsear m√©todo
 	Verificar se a interface excepcional mudou
 		Sim
 			Iniciar visitor caller
-				Para cada mÈtodo, verificar se a interface mudou
+				Para cada m√©todo, verificar se a interface mudou
 					Sim
 						Processar e repetir
-					N„o
+					N√£o
 						Finalizar a visita a esse galho
-		N„o
+		N√£o
 			Nada a fazer		
 			
