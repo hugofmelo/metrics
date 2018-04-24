@@ -13,11 +13,16 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import ufrn.dimap.lets.metric.handlers.HandlerUtil;
 
+/**
+ * Representa um nó no grafo de chamadas usado pela ferramenta.
+ * */
 public class MethodNode
 {
-	private IMethod iMethod;
 	private MethodNode parent;
 	private List<MethodNode> children;
+	
+	private IMethod iMethod;
+	
 	private ExceptionalInterface exceptionalInterface;
 	private boolean recursive;
 	
@@ -32,6 +37,7 @@ public class MethodNode
 
 	public void computeExceptionalInterface() throws JavaModelException
 	{
+		// Calcula a interface excepcional de todos os métodos em DFS
 		for ( MethodNode child : this.getChildren() )
 		{
 			child.computeExceptionalInterface();
@@ -42,10 +48,16 @@ public class MethodNode
 			CompilationUnit compilationUnit = HandlerUtil.parse(this.iMethod);
 			MethodDeclaration methodDeclaration = MethodFinder.find ( this.iMethod, compilationUnit );
 			
-			if (!MethodValidator.hasNestedTryStatement(methodDeclaration))
-			{
-				MethodVisitor methodVisitor = new MethodVisitor(this);
-				methodDeclaration.accept(methodVisitor);
+			
+			EIVisitor eiVisitor = new EIVisitor (this, methodDeclaration);
+			methodDeclaration.accept(eiVisitor);
+			
+			this.exceptionalInterface = eiVisitor.getExceptionalInterface();
+			
+			//if (!MethodValidator.hasNestedTryStatement(methodDeclaration))
+			//{
+			//	MethodVisitor methodVisitor = new MethodVisitor(this);
+			//	methodDeclaration.accept(methodVisitor);
 				
 //				this.thrown.addAll(methodVisitor.thrownTypes);
 //				
@@ -55,11 +67,11 @@ public class MethodNode
 //					this.rethrown.addAll(callee.getThrown());
 //					this.rethrown.addAll(callee.getRethrown());
 //				}
-			}
-			else
-			{
-				addDeclaredExceptions();
-			}
+			//}
+		//	else
+		//	{
+		//		addDeclaredExceptions();
+		//	}
 		}
 		else
 		{
@@ -73,7 +85,7 @@ public class MethodNode
 	 */
 	private void addDeclaredExceptions() throws JavaModelException
 	{
-		// TODO
+		// TODO Implementar de verdade
 		for ( String exception : this.iMethod.getExceptionTypes() )
 		{
 			String qualifiedName = exception.substring(1, exception.length() - 1);
@@ -82,19 +94,23 @@ public class MethodNode
 			
 			if (type != null)
 			{
-				//this.propagated.add(type);
+				//Signaler signaler = new Signaler (new EIType(type), null, null, null);
+				//this.exceptionalInterface.addSignaler(signaler);
 			}
 		}
 	}
 
 	/**
-	 * O IMethod é parseable se não é nativo e possui código-fonte (é um CompilationUnit ou um ClassFile com código-fonte linkado).
+	 * O IMethod é parseable se possível código-fonte.
+	 * 
+	 * Ele possui código se é um CompilationUnit ou se é um ClassFile com código-fonte linkado. Por 
+	 * vezes (acho que ocorre com construtores implícitos) a classe possui código-fonte,
+	 * mas o método não.
 	 * @param	method	O método a ser testado.
 	 * */
 	private boolean isParseable(IMethod method) throws JavaModelException
 	{		
-		if ( method.getCompilationUnit() != null ||
-			(method.getClassFile() != null && method.getClassFile().getSource() != null))
+		if ( method.getSource() != null )
 		{
 			if ( !isAbstract (method.getSource()) )
 			{

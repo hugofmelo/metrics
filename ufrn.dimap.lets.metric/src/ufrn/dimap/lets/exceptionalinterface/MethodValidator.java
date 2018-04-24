@@ -6,7 +6,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TryStatement;
 
 /**
- * O MethodFinder possui métodos estáticos que procuram por determinado método em um compilationUnit.
+ * O MethodValidator possui métodos estáticos que determinam se o código-fonte utiliza padrões suportados pela ferramenta..
  * */
 public class MethodValidator extends ASTVisitor
 {

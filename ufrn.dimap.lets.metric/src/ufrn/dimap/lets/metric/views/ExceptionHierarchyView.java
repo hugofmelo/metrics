@@ -65,32 +65,27 @@ public class ExceptionHierarchyView extends ViewPart {
 
 		@Override
 		public void addListener(ILabelProviderListener listener) {
-			// TODO Auto-generated method stub
-			
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public void dispose() {
-			// TODO Auto-generated method stub
-			
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public boolean isLabelProperty(Object element, String property) {
-			// TODO Auto-generated method stub
-			return false;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public void removeListener(ILabelProviderListener listener) {
-			// TODO Auto-generated method stub
-			
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public Image getImage(Object element) {
-			// TODO Auto-generated method stub
-			return null;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -251,10 +246,8 @@ public class ExceptionHierarchyView extends ViewPart {
 				try {
 					JavaUI.openInEditor(node.exception);
 				} catch (PartInitException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (JavaModelException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				/*
@@ -263,7 +256,6 @@ public class ExceptionHierarchyView extends ViewPart {
 				try {
 					file = (IFile)iCompilationUnit.getUnderlyingResource();
 				} catch (JavaModelException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -272,7 +264,6 @@ public class ExceptionHierarchyView extends ViewPart {
 				try {
 					editor = org.eclipse.ui.ide.IDE.openEditor(page, file);
 				} catch (PartInitException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				ITextEditor textEditor = (ITextEditor) editor;

@@ -82,4 +82,9 @@ public class EIType
 		
 		return false;
 	}
+	
+	public String toString ()
+	{
+		return this.getQualifiedName();
+	}
 }

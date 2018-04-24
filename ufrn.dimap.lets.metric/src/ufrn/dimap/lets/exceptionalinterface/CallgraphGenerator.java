@@ -24,7 +24,6 @@ import org.eclipse.jdt.internal.corext.callhierarchy.MethodWrapper;
 public class CallgraphGenerator
 {	
 	private static MethodNode fakeGraphRoot; // Raiz do grafo de chamadas
-	private static Set <String> discovered; // List de nós que já foram descobertos. Usado para podar o callgraph.
 	private static Stack<MethodNode> processing; // Pilha auxiliar de MethodNode que estão em processamento. Usado para verificar recursão. Usado somente no grafo completo. Na versão podada, a poda ocorre antes de haver recursão.
 	
 	private CallgraphGenerator ()
@@ -59,9 +58,7 @@ public class CallgraphGenerator
 	{
 		MethodWrapper rootMethodWrapper = initGraph(method);
 		
-		discovered = new HashSet<>();
-		
-		prunedDepthFirstSearch (rootMethodWrapper, fakeGraphRoot);
+		prunedDepthFirstSearch (rootMethodWrapper, fakeGraphRoot, new HashSet<>());
 		
 		return fakeGraphRoot.getChildren().get(0);
 	}
@@ -77,8 +74,8 @@ public class CallgraphGenerator
 		MethodWrapper wrapper = hierarchy.getCalleeRoots(new IMethod[]{method})[0];
 		
 		// Cria MethodNode para ser a raiz falsa
-		fakeGraphRoot = new MethodNode ((IMethod) wrapper.getMember(), null);
-		//fakeGraphRoot = new MethodNode (null, null);
+		//fakeGraphRoot = new MethodNode ((IMethod) wrapper.getMember(), null);
+		fakeGraphRoot = new MethodNode (null, null);
 		
 		return wrapper;
 	}
@@ -91,18 +88,19 @@ public class CallgraphGenerator
 	 */
 	private static void completeDepthFirstSearch(MethodWrapper wrapper, MethodNode parent)
 	{
+		// Alguns MethodWrappers não são metodos de verdade.. É preciso verificar..
 		if ( isMethod(wrapper) )
 		{
 			// É criado um novo nó para o método
 			MethodNode child = new MethodNode ((IMethod) wrapper.getMember(), parent);
 			parent.getChildren().add(child);
 			
-			// Se este método faz parte de uma recursão, ele é marcado como recursivo e seus filhos não são colocados novamente na busca
+			// Se este método faz parte de uma recursão, ele é marcado como recursivo.
 			if ( isRecursive (wrapper) )
 			{
 				child.setRecursive(true);
 			}
-			else
+			else // senão é recursivo, a busca continua com os callees do método.
 			{
 				processing.push(child);
 				
@@ -126,11 +124,15 @@ public class CallgraphGenerator
 	/**
 	 * Itera sobre os MethodWrappers, que implementam o call graph do eclipse, gerando o grafo cujos nós são MethodNodes.
 	 * 
-	 * @param wrapper 
-	 * @param node
+	 * A versão podada ignora novas ocorrencias de um mesmo método, mesmo que não seja na mesma pilha de execução.
+	 * 
+	 * @param wrapper MethodWrapper que está sendo processado.
+	 * @param node Parent usado para facilitar as criação de conexões.
+	 * @param discovered Nós que já foram descobertos. Usado para podar o callgraph.
 	 */
-	private static void prunedDepthFirstSearch(MethodWrapper wrapper, MethodNode parent)
+	private static void prunedDepthFirstSearch(MethodWrapper wrapper, MethodNode parent, HashSet<String> discovered)
 	{
+		// Alguns MethodWrappers não são metodos de verdade.. É preciso verificar..
 		if ( isMethod(wrapper) )
 		{
 			if (!discovered.contains(wrapper.getMember().getHandleIdentifier()))
@@ -143,7 +145,7 @@ public class CallgraphGenerator
 
 				for (MethodWrapper w : wrapper.getCalls(new NullProgressMonitor()))
 				{
-					prunedDepthFirstSearch(w, child);
+					prunedDepthFirstSearch(w, child, discovered);
 				}
 			}
 		}
@@ -151,7 +153,7 @@ public class CallgraphGenerator
 		{
 			for (MethodWrapper w : wrapper.getCalls(new NullProgressMonitor()))
 			{	
-				prunedDepthFirstSearch(w, parent);
+				prunedDepthFirstSearch(w, parent, discovered);
 			}
 		}
 	}

@@ -38,12 +38,10 @@ public class OpenEntryInEditorAction extends Action
 			}
 			catch (PartInitException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			catch (JavaModelException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

@@ -60,17 +60,14 @@ public class AllMetricsHandler extends AbstractHandler
 		}
 		catch (JavaModelException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (PartInitException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 

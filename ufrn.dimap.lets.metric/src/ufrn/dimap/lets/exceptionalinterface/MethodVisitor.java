@@ -52,7 +52,6 @@ import org.eclipse.jdt.core.dom.TryStatement;
 
 /**
  * O MethodVisitor deve ser chamado a partir de um MethodDeclaration.
- * Pré-condição: o método parseado não possui tries aninhados.
  * */
 public class MethodVisitor extends ASTVisitor
 {	
@@ -62,7 +61,7 @@ public class MethodVisitor extends ASTVisitor
 	
 	public MethodVisitor (MethodNode caller)
 	{
-		this.caller = caller;
+		this.caller = caller; 
 		this.tryStatement = null;
 		this.catchClause = null;
 	}
@@ -91,6 +90,7 @@ public class MethodVisitor extends ASTVisitor
 	public void endVisit ( CatchClause catchClause )
 	{
 		this.catchClause = null;
+		
 	}	
 	
 	@Override
@@ -153,7 +153,7 @@ public class MethodVisitor extends ASTVisitor
 		
 		if ( callee != null )
 		{	
-			Set<EIType> exceptions = callee.getExceptionalInterface().getExternalExceptions();
+			Set<EIType> exceptions = callee.getExceptionalInterface().getExternalExceptionTypes();
 			
 			if ( !exceptions.isEmpty() )
 			{
@@ -188,17 +188,17 @@ public class MethodVisitor extends ASTVisitor
 					
 					if ( throwVisitor.isWrapped() )
 					{
-						caller.getExceptionalInterface().addWrapped(new EIType(throwVisitor.getWrapperExceptionType()), signaledExceptionType);
+						//caller.getExceptionalInterface().addWrapped(new EIType(throwVisitor.getWrapperExceptionType()), signaledExceptionType);
 					}
 					else if ( throwVisitor.isRethrown() )
 					{
-						caller.getExceptionalInterface().addRethrown(signaledExceptionType);
+						//caller.getExceptionalInterface().addRethrown(signaledExceptionType);
 					}
 					else
 					{
 						if ( signalerIsCall )
 						{
-							caller.getExceptionalInterface().addCaught (signaledExceptionType, new EIType (caughtExceptionType));
+							//caller.getExceptionalInterface().addCaught (signaledExceptionType, new EIType (caughtExceptionType));
 						}
 						else // throw
 						{
@@ -212,11 +212,11 @@ public class MethodVisitor extends ASTVisitor
 			{
 				if ( signalerIsCall )
 				{
-					caller.getExceptionalInterface().addPropagated(signaledExceptionType);
+					//caller.getExceptionalInterface().addPropagated(signaledExceptionType);
 				}
 				else
 				{
-					caller.getExceptionalInterface().addThrown(signaledExceptionType);
+					//caller.getExceptionalInterface().addThrown(signaledExceptionType);
 				}
 			}
 		}
@@ -225,11 +225,11 @@ public class MethodVisitor extends ASTVisitor
 		{
 			if ( signalerIsCall )
 			{
-				caller.getExceptionalInterface().addPropagated(signaledExceptionType);
+				//caller.getExceptionalInterface().addPropagated(signaledExceptionType);
 			}
 			else
 			{
-				caller.getExceptionalInterface().addThrown(signaledExceptionType);
+				//caller.getExceptionalInterface().addThrown(signaledExceptionType);
 			}
 		}
 	}

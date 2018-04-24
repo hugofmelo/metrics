@@ -1,11 +1,18 @@
 Para parsear projetos standalone - https://www.programcreek.com/2011/01/a-complete-standalone-example-of-astparser/
 
 TODO
-Prioridade 2: Testar calculo das interface excepcional com finally. try-finally(throw) e try-finally(return)
+
+OK Prioridade 2: Testar calculo das interface excepcional com finally. try-finally(throw) e try-finally(return)
 OK Prioridade 1: refatorar MethodNode: criar classe ExceptionalInterface, com relação 1:1 com MethodNode.
 OK Prioridade 1: ExceptionalInterface deve ter uma lista de EIType, que por sua vez possui um ITypeBinding ou um IType. Implementas equals do EIType.
-Prioridade 1: Refatorar ExceptionalInterface para armazenar origem do fluxo. Pode ser armazenado no IMethod + linha de código. Reimplementar equals e hashCode. Trocar EIType por EISignaler, que tem o tipo e origem.
-Prioridade 2: Diferenciar cada sinalização: trocar Set por List em ExceptionalInterface.
+OK Prioridade 1: Refatorar ExceptionalInterface para armazenar origem do fluxo. Pode ser armazenado no IMethod + linha de código. Reimplementar equals e hashCode. Trocar EIType por EISignaler, que tem o tipo e origem.
+OK Prioridade 2: Diferenciar cada sinalização: trocar Set por List em ExceptionalInterface.
+Prioridade 1: utilizar Log4J2
+Prioridade 1: testar com Weka
+Prioridade 2: resolver dívidas
+Prioridade 2: testar com Weka
+Prioridade 3: salvar/carregar interface excepcional
+Prioridade 4: testar com Weka
 
 
 OBSERVAÇÕES

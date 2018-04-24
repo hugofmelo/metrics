@@ -34,7 +34,6 @@
          <command
                commandId="ufrn.dimap.lets.metric.exceptionalinterface"
                label="Generate Exceptional Interface"
-               name="Generate Exceptional Interface"
                style="push">
          </command>
       </menuContribution>
