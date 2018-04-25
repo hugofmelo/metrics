@@ -1,28 +1,28 @@
 package ufrn.dimap.lets.metric.handlers;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.PlatformUI;
 
+import ufrn.dimap.lets.exceptionalinterface.CallGraphPrinter;
 import ufrn.dimap.lets.exceptionalinterface.CallgraphGenerator;
-import ufrn.dimap.lets.exceptionalinterface.EIType;
 import ufrn.dimap.lets.exceptionalinterface.MethodNode;
+import ufrn.dimap.lets.exceptionalinterface.ShouldNotHappenException;
 import ufrn.dimap.lets.exceptionalinterface.Signaler;
 
 public class ExceptionalInterfaceHandler extends AbstractHandler
-{	
-	private static Logger logger = LogManager.getLogger();
-	
+{		
 	public Object execute(ExecutionEvent event) throws ExecutionException
 	{
 		long time;
@@ -34,45 +34,59 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 		}
 		catch (JavaModelException e)
 		{
-			logger.warn(e);
-			return null;
+			throw new ShouldNotHappenException(e);
 		}
 		
 		time = System.nanoTime();
 		MethodNode methodRoot = CallgraphGenerator.generatePrunedGraphFrom(method);
 		time = System.nanoTime() - time; 
 		
-		logger.info ( "Tempo de criação do grafo de chamadas:\t" + time );
-		logger.info ( "Grafo de chamadas:\n" + methodRoot.printGraph());
+		System.out.println("\n\nINICIO DA EXECUÇÃO\n");
+		System.out.println("Tempo (milisegundos) de criação do grafo de chamadas: " + TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS));
+		System.out.println( "Grafo de chamadas completo:");
+		
+		try
+		{
+			CallGraphPrinter.printPruned(methodRoot, Paths.get("..//teste.txt"));
+		}
+		catch (IOException e1)
+		{
+			e1.printStackTrace();
+		}
+		
+		
+		
+//		System.out.println( "Grafo de chamadas podado:\n" + methodRoot.printPrunedGraph());
+//		System.out.println();
 		
 		try
 		{
 			time = System.nanoTime();
+			// TODO processar callgraph e interface junto
 			methodRoot.computeExceptionalInterface();
 			time = System.nanoTime() - time;
 			
+			System.out.println( "Tempo (milisegundos) de calculo das interfaces excepcionais: " + TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) );
 			
-			logger.info ( "Interface excepcional do método:\n" + methodRoot.getExceptionalInterface());
 			
-			logger.info("METHOD");
-			logger.info(methodRoot);
-			logger.info ( "Tempo de calculo das interfaces excepcionais:\t" + time );
-			
-			logger.info("CALLEES");
+			System.out.println();
+			System.out.println("METHOD");
+			System.out.println(methodRoot);
+			System.out.println("CALLEES");
 			for ( MethodNode callee : methodRoot.getChildren())
 			{
-				logger.info(callee);
+				System.out.println(callee);
 			}
 			
-			logger.info("EXCEPTIONAL INTERFACE: ");
+			System.out.println("EXCEPTIONAL INTERFACE: ");
 			for ( Signaler signaler : methodRoot.getExceptionalInterface().getSignalers() )
 			{
-				logger.info(signaler);
+				System.out.println(signaler);
 			}
 		}
-		catch (JavaModelException e)
+		catch (Exception e)
 		{
-			logger.error(e);
+			System.out.println(e);
 		}
 		
 		return null;
@@ -94,7 +108,7 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 			}
 		}
 
-		return null;
+		throw new RuntimeException("Não foi selecionado um método!!");
 	}
 	
 	private static ICompilationUnit getSelectedCompilationUnit () throws JavaModelException

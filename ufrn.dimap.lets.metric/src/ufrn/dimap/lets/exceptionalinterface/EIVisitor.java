@@ -1,12 +1,8 @@
 package ufrn.dimap.lets.exceptionalinterface;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CatchClause;
@@ -16,7 +12,6 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.ThrowStatement;
@@ -46,8 +41,6 @@ public class EIVisitor extends ASTVisitor
 	private MethodNode caller;
 	private ASTNode parent;
 	private ExceptionalInterface exceptionalInterface;
-	
-	private static Logger logger = LogManager.getLogger();
 	
 	public EIVisitor ( MethodNode caller, ASTNode parentNode )
 	{
@@ -117,8 +110,8 @@ public class EIVisitor extends ASTVisitor
 		}
 		else
 		{
-			logger.warn("Método sem JavaElement: ");
-			logger.warn(instanceCreation);
+			// TODO usar logger
+			System.out.println("WARNING: Método sem JavaElement: " + instanceCreation);
 			return false;
 		}
 	}
@@ -154,13 +147,7 @@ public class EIVisitor extends ASTVisitor
 		Signaler signaler = new Signaler(new EIType(exceptionType), cu.getJavaElement().getHandleIdentifier(), throwNode.getStartPosition(), throwNode.getLength());
 		
 		this.exceptionalInterface.addSignaler(signaler);
-		
-		/*
-		if (!onCatchBlock())
-		{
-			evaluate(new EIType(exceptionType), false);
-		}
-		*/
+
 		return true;
 	}
 	
@@ -188,14 +175,10 @@ public class EIVisitor extends ASTVisitor
 	{		
 		for ( MethodNode node : this.caller.getChildren() )
 		{
-			try {
-				if ( methodBinding.getJavaElement().getHandleIdentifier().equals(node.getIdentifier()) )
-				{
-					return node;
-				}
-			} catch (Throwable e) {
-				return null;
-			}
+			if ( methodBinding.getJavaElement().getHandleIdentifier().equals(node.getIdentifier()) )
+			{
+				return node;
+			}	
 		}
 		
 		return null;

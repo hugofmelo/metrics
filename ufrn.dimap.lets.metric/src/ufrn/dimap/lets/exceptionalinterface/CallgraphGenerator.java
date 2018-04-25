@@ -1,7 +1,6 @@
 package ufrn.dimap.lets.exceptionalinterface;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
 import java.util.Stack;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -58,7 +57,7 @@ public class CallgraphGenerator
 	{
 		MethodWrapper rootMethodWrapper = initGraph(method);
 		
-		prunedDepthFirstSearch (rootMethodWrapper, fakeGraphRoot, new HashSet<>());
+		prunedDepthFirstSearch (rootMethodWrapper, fakeGraphRoot, new HashMap<>());
 		
 		return fakeGraphRoot.getChildren().get(0);
 	}
@@ -130,23 +129,47 @@ public class CallgraphGenerator
 	 * @param node Parent usado para facilitar as criação de conexões.
 	 * @param discovered Nós que já foram descobertos. Usado para podar o callgraph.
 	 */
-	private static void prunedDepthFirstSearch(MethodWrapper wrapper, MethodNode parent, HashSet<String> discovered)
+	private static void prunedDepthFirstSearch(MethodWrapper wrapper, MethodNode parent, HashMap<String, MethodNode> discovered)
 	{
 		// Alguns MethodWrappers não são metodos de verdade.. É preciso verificar..
 		if ( isMethod(wrapper) )
 		{
-			if (!discovered.contains(wrapper.getMember().getHandleIdentifier()))
+			String identifier = wrapper.getMember().getHandleIdentifier();
+			
+			MethodNode child = discovered.get(identifier);
+			// TODO verificar o handle identifier de métodos normais, static, anonymous, void, com argumento, sem argumento, 
+			// O método nunca foi descoberto
+			if (child == null)
 			{
-				discovered.add(wrapper.getMember().getHandleIdentifier());
-				
-				// É criado um novo nó para o método
-				MethodNode child = new MethodNode((IMethod) wrapper.getMember(), parent);
+				child = new MethodNode((IMethod) wrapper.getMember(), parent);
 				parent.getChildren().add(child);
-
+				
+				discovered.put(identifier, child);
+				
+				for (MethodWrapper w : wrapper.getCalls(new NullProgressMonitor()))
+				{
+					w.getMember();
+				}
+				
 				for (MethodWrapper w : wrapper.getCalls(new NullProgressMonitor()))
 				{
 					prunedDepthFirstSearch(w, child, discovered);
 				}
+				
+				// TODO processar callgraph e interface junto
+//				try
+//				{
+//					child.computeExceptionalInterface();
+//				}
+//				catch (JavaModelException e)
+//				{
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+			}
+			else
+			{
+				parent.getChildren().add(child);
 			}
 		}
 		else
@@ -161,7 +184,9 @@ public class CallgraphGenerator
 	// Auxiliar methods
 	
 	/**
-	 * Um MethodWrapper as vezes é do tipo Type, e não Method. Ocorre com classes anonimas. Esse teste parece uma gambiarra, mas é necessário.
+	 * Um MethodWrapper as vezes é do tipo Type, e não Method.
+	 * 
+	 * Ocorre com classes anonimas. Esse teste parece uma gambiarra, mas é necessário.
 	 * 
 	 * @param wrapper o MethodWrapper a ser testado.
 	 */

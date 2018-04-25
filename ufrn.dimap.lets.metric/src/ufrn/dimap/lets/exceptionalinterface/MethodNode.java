@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -31,13 +30,24 @@ public class MethodNode
 		this.iMethod = iMethod;
 		this.parent = parent;
 		this.children = new ArrayList<>();
-		this.exceptionalInterface = new ExceptionalInterface();
+		this.exceptionalInterface = null;
+		// TODO processar callgraph e interface junto 
+		//this.exceptionalInterface = new ExceptionalInterface();
 		this.recursive = false;
 	}
 
 	public void computeExceptionalInterface() throws JavaModelException
 	{
+		// TODO processar callgraph e interface junto
+		// É possível que este MethodNode já tenha sua interface calculada (caso ele apareça várias vezes no grafo de chamadas) ou carregada
+		if ( this.exceptionalInterface != null )
+		{
+			return;
+		}
+		
 		// Calcula a interface excepcional de todos os métodos em DFS
+		this.exceptionalInterface = new ExceptionalInterface();
+		
 		for ( MethodNode child : this.getChildren() )
 		{
 			child.computeExceptionalInterface();
@@ -83,21 +93,21 @@ public class MethodNode
 	 * As exceções declaradas pelo metodo na cláusula "throws". Para cada tipo, ele é procurado no JavaModel. Senão existir, ele simplesmente é ignorado.
 	 * @throws JavaModelException
 	 */
-	private void addDeclaredExceptions() throws JavaModelException
+	private void addDeclaredExceptions()
 	{
 		// TODO Implementar de verdade
-		for ( String exception : this.iMethod.getExceptionTypes() )
-		{
-			String qualifiedName = exception.substring(1, exception.length() - 1);
-			
-			IType type = this.iMethod.getJavaProject().findType(qualifiedName);
-			
-			if (type != null)
-			{
-				//Signaler signaler = new Signaler (new EIType(type), null, null, null);
-				//this.exceptionalInterface.addSignaler(signaler);
-			}
-		}
+//		for ( String exception : this.iMethod.getExceptionTypes() )
+//		{
+//			String qualifiedName = exception.substring(1, exception.length() - 1);
+//			
+//			IType type = this.iMethod.getJavaProject().findType(qualifiedName);
+//			
+//			if (type != null)
+//			{
+//				//Signaler signaler = new Signaler (new EIType(type), null, null, null);
+//				//this.exceptionalInterface.addSignaler(signaler);
+//			}
+//		}
 	}
 
 	/**
@@ -210,29 +220,7 @@ public class MethodNode
 		}
 	}
 	
-	public String printGraph ()
-	{
-		return this.printGraphR(0);
-	}
 	
-	private String printGraphR (int tabs)
-	{
-		StringBuilder result = new StringBuilder();
-		
-		for ( int i = 0 ; i < tabs ; i++ )
-			result.append("  "); 
-		
-		result.append (this.toString());
-		result.append("\n");
-			
-		for ( MethodNode n : this.children )
-		{
-			result.append (n.printGraphR(tabs+1));
-		}
-		
-		return result.toString();
-	}
-
 	
 	
 }
