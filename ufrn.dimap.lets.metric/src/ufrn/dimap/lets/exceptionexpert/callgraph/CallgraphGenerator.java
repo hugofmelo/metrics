@@ -1,11 +1,10 @@
 package ufrn.dimap.lets.exceptionexpert.callgraph;
 
 import java.util.HashMap;
-import java.util.Stack;
+import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
@@ -26,6 +25,7 @@ import ufrn.dimap.lets.exceptionexpert.model.MethodNode;
 public class CallgraphGenerator
 {	
 	private static MethodNode fakeGraphRoot; // Raiz do grafo de chamadas
+	private static Map <String, MethodNode> discovered = new HashMap<>();
 	
 	private CallgraphGenerator ()
 	{
@@ -43,7 +43,7 @@ public class CallgraphGenerator
 	{
 		MethodWrapper rootMethodWrapper = initGraph(method);
 		
-		prunedDepthFirstSearch (rootMethodWrapper, fakeGraphRoot, new HashMap<>());
+		prunedDepthFirstSearch (rootMethodWrapper, fakeGraphRoot/*, new HashMap<>()*/);
 		
 		return fakeGraphRoot.getChildren().get(0);
 	}
@@ -74,7 +74,7 @@ public class CallgraphGenerator
 	 * @param node Parent usado para facilitar as criação de conexões.
 	 * @param discovered Nós que já foram descobertos. Usado para podar o callgraph.
 	 */
-	private static void prunedDepthFirstSearch(MethodWrapper wrapper, MethodNode parent, HashMap<String, MethodNode> discovered)
+	private static void prunedDepthFirstSearch(MethodWrapper wrapper, MethodNode parent/*, HashMap<String, MethodNode> discovered*/)
 	{
 		// Alguns MethodWrappers não são metodos de verdade.. É preciso verificar..
 		if ( isMethod(wrapper) )
@@ -93,7 +93,7 @@ public class CallgraphGenerator
 				
 				for (MethodWrapper w : wrapper.getCalls(new NullProgressMonitor()))
 				{
-					prunedDepthFirstSearch(w, child, discovered);
+					prunedDepthFirstSearch(w, child/*, discovered*/);
 				}
 			}
 			else

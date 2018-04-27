@@ -101,18 +101,18 @@ public class ExceptionalInterfaceHandler extends AbstractHandler
 			builder.append(TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) + "\t");
 
 			
-			builder.append(methodRoot + "\t");
-			
-			for ( MethodNode callee : methodRoot.getChildren())
-			{
-				builder.append(callee + "-");
-			}
-			builder.append("\t");
-
-			for ( Signaler signaler : methodRoot.getExceptionalInterface().getSignalers() )
-			{
-				builder.append(signaler+"-");
-			}		
+//			builder.append(methodRoot + "\t");
+//			
+//			for ( MethodNode callee : methodRoot.getChildren())
+//			{
+//				builder.append(callee + "-");
+//			}
+//			builder.append("\t");
+//
+//			for ( Signaler signaler : methodRoot.getExceptionalInterface().getSignalers() )
+//			{
+//				builder.append(signaler+"-");
+//			}		
 		}
 		catch (Exception e)
 		{
