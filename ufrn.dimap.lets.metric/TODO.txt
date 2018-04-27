@@ -7,12 +7,17 @@ OK Prioridade 1: refatorar MethodNode: criar classe ExceptionalInterface, com re
 OK Prioridade 1: ExceptionalInterface deve ter uma lista de EIType, que por sua vez possui um ITypeBinding ou um IType. Implementas equals do EIType.
 OK Prioridade 1: Refatorar ExceptionalInterface para armazenar origem do fluxo. Pode ser armazenado no IMethod + linha de código. Reimplementar equals e hashCode. Trocar EIType por EISignaler, que tem o tipo e origem.
 OK Prioridade 2: Diferenciar cada sinalização: trocar Set por List em ExceptionalInterface.
-Prioridade 1: utilizar Log4J2
-Prioridade 1: testar com Weka
-Prioridade 2: resolver dívidas
-Prioridade 2: testar com Weka
-Prioridade 3: salvar/carregar interface excepcional
-Prioridade 4: testar com Weka
+
+OK Prioridade 0: Pegar todos os main de um projeto
+Prioridade 1: salvar os relatórios em arquivos
+Prioridade 1: salvar/carregar interface excepcional
+OK Prioridade 1: testar com Weka
+OK Prioridade 2: resolver dívidas técnicas
+OK Prioridade 2: testar com Weka
+Prioridade 2: Filtrar interface por origem. Excluir o que for origem em Java.
+Prioridade 3: Implementar detecção de exception chain.
+Prioridade 3: utilizar Log4J2
+
 
 
 OBSERVAÇÕES

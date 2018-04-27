@@ -1,4 +1,4 @@
-package ufrn.dimap.lets.exceptionalinterface;
+package ufrn.dimap.lets.exceptionexpert.model;
 
 import java.util.ArrayList;
 import java.util.Comparator;

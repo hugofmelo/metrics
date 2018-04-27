@@ -1,4 +1,4 @@
-package ufrn.dimap.lets.exceptionalinterface;
+package ufrn.dimap.lets.exceptionexpert.exceptionalinterface;
 
 import java.util.List;
 import java.util.Set;

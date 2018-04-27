@@ -1,4 +1,4 @@
-package ufrn.dimap.lets.exceptionalinterface;
+package ufrn.dimap.lets.exceptionexpert.visitor;
 
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -16,6 +16,11 @@ import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
+
+import ufrn.dimap.lets.exceptionexpert.model.EIType;
+import ufrn.dimap.lets.exceptionexpert.model.ExceptionalInterface;
+import ufrn.dimap.lets.exceptionexpert.model.MethodNode;
+import ufrn.dimap.lets.exceptionexpert.model.Signaler;
 
 
 /* 
@@ -36,13 +41,13 @@ import org.eclipse.jdt.core.dom.TryStatement;
  * blocos catch ao final são usados para remover exceções da interface excepcional, bem como
  * inserir novas.
  * */
-public class EIVisitor extends ASTVisitor
+public class ExceptionalInterfaceVisitor extends ASTVisitor
 {	
 	private MethodNode caller;
 	private ASTNode parent;
 	private ExceptionalInterface exceptionalInterface;
 	
-	public EIVisitor ( MethodNode caller, ASTNode parentNode )
+	public ExceptionalInterfaceVisitor ( MethodNode caller, ASTNode parentNode )
 	{
 		this.caller = caller;
 		this.parent = parentNode;
@@ -55,7 +60,7 @@ public class EIVisitor extends ASTVisitor
 		// Entraria em loop em blocos try aninhados
 		if ( tryStatement != parent )
 		{
-			EIVisitor visitor = new EIVisitor(caller, tryStatement);
+			ExceptionalInterfaceVisitor visitor = new ExceptionalInterfaceVisitor(caller, tryStatement);
 			tryStatement.accept(visitor);
 			
 			this.exceptionalInterface.addSignalers(visitor.getExceptionalInterface().getSignalers());
@@ -111,7 +116,7 @@ public class EIVisitor extends ASTVisitor
 		else
 		{
 			// TODO usar logger
-			System.out.println("WARNING: Método sem JavaElement: " + instanceCreation);
+			System.out.println("WARNING: Construtor sem JavaElement: " + instanceCreation);
 			return false;
 		}
 	}

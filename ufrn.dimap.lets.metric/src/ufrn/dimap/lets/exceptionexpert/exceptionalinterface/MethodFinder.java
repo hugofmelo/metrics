@@ -1,4 +1,4 @@
-package ufrn.dimap.lets.exceptionalinterface;
+package ufrn.dimap.lets.exceptionexpert.exceptionalinterface;
 
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -7,7 +7,8 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 /**
- * O MethodFinder possui métodos estáticos que procuram por determinado método em um compilationUnit. */
+ * O MethodFinder possui métodos estáticos que procuram por determinado método em um compilationUnit.
+ * */
 public class MethodFinder extends ASTVisitor
 {
 	private static MethodFinder finder = new MethodFinder();
@@ -51,7 +52,7 @@ public class MethodFinder extends ASTVisitor
 	{
 		if ( this.targetDeclaration == null )
 		{
-			throw new ShouldNotHappenException("MethodDeclaration não encontrado em CompilationUnit.");
+			throw new ShouldNotHappenException("MethodDeclaration não encontrado em CompilationUnit.\n\nHandle identifier: " + this.targetMethod.getHandleIdentifier() + "\n");
 		}
 		else
 		{

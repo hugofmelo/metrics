@@ -1,4 +1,4 @@
-package ufrn.dimap.lets.exceptionalinterface;
+package ufrn.dimap.lets.exceptionexpert.exceptionalinterface;
 
 import java.util.List;
 import java.util.Set;
@@ -15,6 +15,9 @@ import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
+
+import ufrn.dimap.lets.exceptionexpert.model.EIType;
+import ufrn.dimap.lets.exceptionexpert.model.MethodNode;
 
 
 /* Para cada throw ou chamada (MethodInvocation, ClassInstanceCreation, SuperMethodInvocation ou SuperConstructorInvocation),

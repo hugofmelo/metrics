@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -20,7 +21,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.PlatformUI;
 
-import ufrn.dimap.lets.exceptionalinterface.InvalidStateException;
+import ufrn.dimap.lets.exceptionexpert.exceptionalinterface.InvalidStateException;
 
 public class HandlerUtil
 {
@@ -86,7 +87,67 @@ public class HandlerUtil
 
 		return compilationUnits;
 	}
+	
+	public static List<IMethod> getAllMainMethods () throws JavaModelException
+	{
+		List<ICompilationUnit> compilationUnits = getAllCompilationUnits();
+		List<IMethod> mainMethods = new ArrayList<IMethod>();
 
+		for ( ICompilationUnit compilationUnit : compilationUnits )
+		{
+			for ( IType type : compilationUnit.getAllTypes() )
+			{
+				for ( IMethod method : type.getMethods() )
+				{
+					if ( method.isMainMethod() )
+					{
+						mainMethods.add(method);
+					}
+				}
+			}
+		}
+		
+		return mainMethods;
+	}
+
+	public static IMethod getSelectedMethod () throws JavaModelException
+	{
+		ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		ISelection selection = selectionService.getSelection();    
+
+		// Buscar por todos os packages selecionados
+		if(selection instanceof StructuredSelection)
+		{
+			Object element = ((StructuredSelection)selection).getFirstElement();
+
+			if( element instanceof IMethod)
+			{
+				return (IMethod) element;	
+			}
+		}
+
+		throw new RuntimeException("Não foi selecionado um método!!");
+	}
+	
+	public static ICompilationUnit getSelectedCompilationUnit () throws JavaModelException
+	{
+		ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		ISelection selection = selectionService.getSelection();    
+
+		// Buscar por todos os packages selecionados
+		if(selection instanceof StructuredSelection)
+		{
+			Object element = ((StructuredSelection)selection).getFirstElement();
+
+			if( element instanceof ICompilationUnit)
+			{
+				return (ICompilationUnit) element;	
+			}
+		}
+
+		throw new RuntimeException("Não foi selecionado um CompilationUnit!!");
+	}
+	
 	/**
 	 * Reads a ICompilationUnit and creates the AST DOM for manipulating the
 	 * Java source file

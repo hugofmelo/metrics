@@ -1,4 +1,4 @@
-package ufrn.dimap.lets.exceptionalinterface;
+package ufrn.dimap.lets.exceptionexpert.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
+import ufrn.dimap.lets.exceptionexpert.exceptionalinterface.MethodFinder;
+import ufrn.dimap.lets.exceptionexpert.visitor.ExceptionalInterfaceVisitor;
 import ufrn.dimap.lets.metric.handlers.HandlerUtil;
 
 /**
@@ -59,7 +61,7 @@ public class MethodNode
 			MethodDeclaration methodDeclaration = MethodFinder.find ( this.iMethod, compilationUnit );
 			
 			
-			EIVisitor eiVisitor = new EIVisitor (this, methodDeclaration);
+			ExceptionalInterfaceVisitor eiVisitor = new ExceptionalInterfaceVisitor (this, methodDeclaration);
 			methodDeclaration.accept(eiVisitor);
 			
 			this.exceptionalInterface = eiVisitor.getExceptionalInterface();
