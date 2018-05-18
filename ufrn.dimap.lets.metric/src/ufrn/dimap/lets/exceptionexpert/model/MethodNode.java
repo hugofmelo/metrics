@@ -139,6 +139,32 @@ public class MethodNode
 		}
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private boolean isParseable2(IMethod method) throws JavaModelException
+	{		
+		return method.getSource() != null && !isAbstract(method.getSource());
+	}
+	
+	
+	
 	/**
 	 * Dado uma string que representa o código-fonte de um método (podendo incluir Javadoc),
 	 * indica se este método é abstrato (definido em uma classe abstrata ou em uma interface).

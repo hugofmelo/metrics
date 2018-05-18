@@ -77,16 +77,25 @@ public class ExceptionalInterfaceVisitor extends ASTVisitor
 	public boolean visit ( CatchClause catchClause )
 	{
 		ITypeBinding caughtExceptionType = catchClause.getException().getType().resolveBinding();
-			
-		Iterator<Signaler> signalerIte = this.exceptionalInterface.getSignalers().iterator();
-		while (signalerIte.hasNext())
+		
+		TreeSet<Signaler> signalers = this.exceptionalInterface.getSignalers();
+		
+		if ( !signalers.isEmpty() )
 		{
-			Signaler signaler = signalerIte.next();
-			
-			if (EIType.isSubtype (signaler.getType(), caughtExceptionType))
+			Iterator<Signaler> signalerIte = signalers.iterator();
+			while (signalerIte.hasNext())
 			{
-				signalerIte.remove();
+				Signaler signaler = signalerIte.next();
+				
+				if (EIType.isSubtype (signaler.getType(), caughtExceptionType))
+				{
+					signalerIte.remove();
+				}
 			}
+		}
+		else
+		{
+			// TODO marque esse catch como unreachable
 		}
 		
 		return true;
